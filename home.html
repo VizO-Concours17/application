@@ -24,6 +24,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
         apply the skin class to the body tag so the changes take effect.
   -->
   <link rel="stylesheet" href="dist/css/skins/skin-blue.min.css">
+  <link rel="stylesheet" href="https://openlayers.org/en/v3.10.1/css/ol.css" type="text/css">
+  <script src="https://openlayers.org/en/v3.10.1/build/ol.js"></script>
   
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -176,10 +178,26 @@ desired effect
     </section>
 
     <!-- Main content -->
-    <section class="content" style=" height: 100%; width: 100%;">      
-      <div id="frame">
-	<iframe id="viewer" allowfullscreen="" ></iframe>
-      </div>	
+    <section class="content" style="width: 100%;">            
+      <div id="map" style="width: 100%;">
+	<div class="modal-dialog" id="map-modal" style="width: 100%;">
+	  <div id="map-modal-content" class="modal-content" style="width: 100%;">
+	    <div class="modal-header">
+	      <h4 class="modal-title"> Selection </h4>
+	    </div>
+	    <div class="modal-body">
+	      <div id="map-frame" class="map"></div>
+	      <div id="frame"  style="width: 100%;">
+	      </div>
+	    </div>
+	    <div class="modal-footer">
+	      <button id="OK-map" class="btn btn-primary" type="button"> Ok </button>
+	      <button id="RETOUR-map" class="btn" type="button" hidden="true"> Retour </button>
+	    </div>
+	  </div>
+	</div>
+      </div>
+      
     </section>
     <!-- /.content -->
   </div>
@@ -208,24 +226,11 @@ desired effect
 <script src="bootstrap/js/bootstrap.min.js"></script>
 <!-- AdminLTE App -->
 <script src="dist/js/app.min.js"></script>
-  <script>
-     function resize () {
+<script src="js/home.js"></script>
 
-     var viewer = document.getElementById('viewer');
-     var container = document.getElementById('frame');
-     var nav = document.getElementById ('navbar');
-     viewer.src="pages/iframe.html";
-     
-     viewer.width = container.clientWidth;     
-     viewer.height = (window.outerHeight - nav.clientHeight) * 0.8;
-     viewer.setAttribute( 'scrolling', 'no' );
-        
-     }
-     
-     $(document).ready (resize);
-     window.onresize = resize;
-     
-   </script>
+<script>  
+
+</script>
 
 <!-- Optionally, you can add Slimscroll and FastClick plugins.
      Both of these plugins are recommended to enhance the

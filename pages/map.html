@@ -17,56 +17,8 @@
 
 </head>
 <body>
-  <div id="map" class="map"></div>
-<script>
-
-var source = new ol.source.Vector({
-    url: 'data/france-geojson/departements.geojson',
-    format: new ol.format.GeoJSON()
-});
-
-var style = new ol.style.Style({
-  fill: new ol.style.Fill({
-    color: 'rgba(255, 255, 255, 0.6)'
-  }),
-  stroke: new ol.style.Stroke({
-    color: '#319FD3',
-    width: 1
-  }),
-  image: new ol.style.Circle({
-    radius: 5,
-    fill: new ol.style.Fill({
-      color: 'rgba(255, 255, 255, 0.6)'
-    }),
-    stroke: new ol.style.Stroke({
-      color: '#319FD3',
-      width: 1
-    })
-  })
-});
-
-var vectorSource = new ol.layer.Vector ({
-    source : source,
-    style : style
-});
-
-var map = new ol.Map({
-    layers: [
-	new ol.layer.Tile ({
-	    source : new ol.source.OSM ()
-	}),
-	new ol.layer.Vector({
-	    source: vectorSource
-	})
-    ],    
-    renderer: 'canvas',
-    target: 'map',
-    view: new ol.View({
-	center: [2., 46.5],
-	zoom: 4
-    })
-});
-
-</script>
+  <div id="map" class="map"></div>  
+  <script src="../js/map.js"></script>
+  
 </body>
 </html>
