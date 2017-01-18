@@ -33,7 +33,7 @@ function setMapSize () {
 	buttonOk.addEventListener ('click', function (e) {
 	    map.once ('precompose', function (event) {
 		var canvas = event.context.canvas;
-		var dpi = 300;
+		var dpi = 500;
 		var scaleFactor = dpi / 96;
 		canvas.width = Math.ceil(canvas.width * scaleFactor);
 		canvas.height = Math.ceil(canvas.height * scaleFactor);

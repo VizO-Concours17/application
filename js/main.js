@@ -4,6 +4,7 @@ var ancx = -1, ancy = -1, start;
 var phi = 0, teta = 60, target;
 var precise = .3;
 
+
 var meshPerYear, currentYear;
 
 var points;
@@ -229,10 +230,10 @@ function createBasicRender () {
     
     var mapMaterial = new THREE.MeshBasicMaterial ({ map: texture1,  blending: THREE.NormalBlending });
     mapMaterial.transparent = true;
-    mapMaterial.opacity = 0.7;
+    mapMaterial.opacity = 0.9;
 
     
-    var map = new THREE.Mesh( planeGeometry, mapMaterial );
+    map = new THREE.Mesh( planeGeometry, mapMaterial );
     map.position.y = 500;
     scene.add (map);
     
@@ -260,7 +261,8 @@ function createBasicRender () {
     
     var gui = new dat.GUI ();
     var radiusController = {
-	Distance: Math.ceil (radius)
+	Distance: Math.ceil (radius),
+	Transparence: 0.9
     };
 
     var distChange = function () {
@@ -274,7 +276,12 @@ function createBasicRender () {
 	camera.lookAt (target);	
     }
 
+    var transparence = (function () {
+	mapMaterial.opacity = radiusController.Transparence;
+    });
+
     gui.add (radiusController, "Distance", Math.ceil (radius), Math.ceil (2.0 * radius), Math.ceil (radius / 100.0)).onChange (distChange);
+    gui.add (radiusController, "Transparence", 0.0, 1.0, 0.01).onChange (transparence);
 
     
 }
