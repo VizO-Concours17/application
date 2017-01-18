@@ -53,25 +53,13 @@ animate ();
 function init() {
 
     scene = new THREE.Scene();    
-    
-    scene.background = new THREE.CubeTextureLoader()
-	.setPath( 'texture/cube/' )
-	.load( [ 'px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg' ],
-	       function (msg) {
-		   console.log (msg);
-	       },
-	       null,
-	       function (error) {
-		   console.log (error);
-	       });    
-    
-    scene.add( new THREE.AmbientLight( 0x606060 ) );
+        
+    scene.add( new THREE.AmbientLight( 0x101010 ) );
     
     var light = new THREE.SpotLight( 0xffffff, 1.5 );
-    light.position.set( 0, 0, 1000 );
-    light.castShadow = true;
-
-    light.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 50, 1, 200, 10000 ) );
+    light.position.set( 0, 1500, 200 );
+    light.castShadow = true;    
+    light.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 70, 1, 200, 2000 ) );
     light.shadow.bias = - 0.00022;
     light.shadow.mapSize.width = 2048;
     light.shadow.mapSize.height = 2048;
@@ -84,11 +72,41 @@ function init() {
     camera.position.z = 1000;
     camera.position.y = -500;
     camera.lookAt (target);
+
+    var planeGeometry = new THREE.PlaneGeometry( 2000, 2000 );
+    planeGeometry.rotateX( - Math.PI / 2 );
+    var planeMaterial = new THREE.ShadowMaterial();
+    planeMaterial.opacity = 0.1;
     
-    renderer = new THREE.WebGLRenderer({antialias : true });
+    var plane = new THREE.Mesh( planeGeometry, planeMaterial );
+    plane.position.y = 100;
+    plane.receiveShadow = true;
+    scene.add( plane );
+
+    var img = window.parent.document.getElementById ('img');
+    var texture1 = new THREE.Texture (img);
+    texture1.needsUpdate = true;    
+    
+    var mapMaterial = new THREE.MeshBasicMaterial ({ map: texture1,  blending: THREE.NormalBlending });
+    mapMaterial.transparent = true;
+    mapMaterial.opacity = 0.7;
+
+    
+    var map = new THREE.Mesh( planeGeometry, mapMaterial );
+    map.position.y = 500;
+    scene.add (map);
+    
+    var helper = new THREE.GridHelper( 1000, 100 );
+    helper.position.y = 100;
+    helper.material.opacity = 0.6;
+    helper.material.transparent = true;
+    scene.add( helper );
+    
+    renderer = new THREE.WebGLRenderer({antialias : true });    
+    renderer.setClearColor( 0xf0f0f0 );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.gammaOutput = true;
-    
+    renderer.shadowMap.enabled = true;
     renderer.domElement.onmousemove = cameraUpdate;
     renderer.domElement.onclick = createRay;
 
@@ -102,6 +120,29 @@ function init() {
     var datas = fillPoints ();
            
     designScene (datas, 0);
+
+    var pos = camera.position;
+    var radius = Math.abs (pos.distanceTo(target));    
+    
+    var gui = new dat.GUI ();
+    var radiusController = {
+	Distance: Math.ceil (radius)
+    };
+
+    var distChange = function () {
+	var radius = radiusController.Distance;
+	var pos = camera.position;
+	pos.x = target.x + radius * Math.sin (teta * Math.PI / 180.0) * Math.sin (phi * Math.PI / 180.0);
+	pos.y = target.y + radius * Math.cos (teta * Math.PI / 180.0);
+	pos.z = target.z + radius * Math.sin (teta * Math.PI / 180.0) * Math.cos (phi * Math.PI / 180.0);
+	
+	camera.position = pos;
+	camera.lookAt (target);	
+    }
+
+    gui.add (radiusController, "Distance", Math.ceil (radius), Math.ceil (2.0 * radius), Math.ceil (radius / 100.0)).onChange (distChange);
+    
+    
 }
 
 
@@ -142,19 +183,42 @@ function createBoxe (data) {
     cyl_mesh.position.x = data ['x'];
     cyl_mesh.position.y = -data ['z'] / 2 + 500;
     cyl_mesh.position.z = data ['y'];
-
+    cyl_mesh.castShadow = true;
+    
     var box_mesh = new THREE.Mesh (box, cyl_mat);
     box_mesh.position.x = data['x'];
     box_mesh.position.z = data['y'];
     box_mesh.position.y = 500;
-    
+    box_mesh.castShadow = true;
     
     var sph_mesh = new THREE.Mesh (sphere, sph_mat);
     sph_mesh.position.x = data['x'];
     sph_mesh.position.y = -data['z'] + 500;
     sph_mesh.position.z = data['y'];
+    sph_mesh.castShadow = true;
+
+    var canvas1 = document.createElement('canvas');
+    var context1 = canvas1.getContext('2d');
+    context1.font = "Bold 10px Arial";
+    context1.fillStyle = "rgba(255,0,0,1)";
+    context1.fillText('Hello, world!', 0, 60);
     
-    mesh += [sph_mesh, cyl_mesh, box_mesh];
+    // canvas contents will be used for a texture
+    var texture1 = new THREE.Texture(canvas1)
+    texture1.needsUpdate = true;
+    
+    var material1 = new THREE.MeshBasicMaterial({ map: texture1, side: THREE.DoubleSide });
+    material1.transparent = true;
+    
+    var mesh1 = new THREE.Mesh(
+        new THREE.PlaneGeometry(50, 10),
+        material1
+    );
+    
+    mesh1.position.set (10, 10, 10);    
+    box_mesh.add(mesh1);
+    
+    mesh += [sph_mesh, cyl_mesh, box_mesh, mesh1];
     scene.add (sph_mesh, cyl_mesh, box_mesh);
 }
 

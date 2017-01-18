@@ -21,9 +21,12 @@ var exportPNGElement = document.getElementById ('export-png');
 exportPNGElement.addEventListener ('click', function (e) {
     map.once('postcompose', function (event) {
 	var canvas = event.context.canvas;
+	console.log (event.feature.getGeometry ().getCoordinates ());
 	exportPNGElement.href = canvas.toDataURL ('image/png');
     });
     map.renderSync ();
 }, false);
 	    
-		    
+
+
+

@@ -1,3 +1,4 @@
+
 var selected = false;
 
 init ();
@@ -21,8 +22,7 @@ function setMapSize () {
 		    source: new ol.source.OSM ()
 		})
 	    ],
-	    view: new ol.View ({
-		
+	    view: new ol.View ({		
 		center: [2., 46.5],
 		zoom: 5
 	    })
@@ -31,9 +31,25 @@ function setMapSize () {
 	map.getView().setCenter (ol.proj.transform ([2, 46.5], 'EPSG:4326', 'EPSG:3857'));
 	var buttonOk = document.getElementById ('OK-map');
 	buttonOk.addEventListener ('click', function (e) {
+	    map.once ('precompose', function (event) {
+		var canvas = event.context.canvas;
+		var dpi = 300;
+		var scaleFactor = dpi / 96;
+		canvas.width = Math.ceil(canvas.width * scaleFactor);
+		canvas.height = Math.ceil(canvas.height * scaleFactor);
+		var ctx=canvas.getContext("2d");
+		ctx.scale(scaleFactor, scaleFactor);	
+	    });
+	    
 	    map.once ('postcompose', function (event) {
 		var canvas = event.context.canvas;
-		console.log (canvas.toDataURL ('image/png'));
+		// On récupre l'image qu'on va convertir en texture
+		var img = document.getElementById ('img');		
+		img.src = canvas.toDataURL ('image/png');
+
+		// on récupere les coordonées de la map a envoyer au serveur		
+		var extent = map.getView ().calculateExtent (map.getSize ());
+		var coords = ol.proj.transformExtent (extent, 'EPSG:3857', 'EPSG:4326');		
 	    });
 	    map.renderSync ();
 	    setDisplay ();
@@ -61,11 +77,8 @@ function resizeMap () {
     
     var nav = document.getElementById ('navbar');
     
-    $('#map-modal').height( (window.outerHeight - nav.clientHeight) * 0.6);
-    console.log ($('#map-modal').height ());
-    $('#map-modal').width(map.clientWidth);
-    $('#map-modal').height (map.clientHeight);
-    var map_frame = document.getElementById ('map-frame');
+    $('#map-modal').height( (window.outerHeight - nav.clientHeight) * 0.6);    
+    $('#map-modal').width ($('#map-modal').height ());       
     $('#map-frame').height (map.clientHeight); 
 }
 
@@ -83,11 +96,15 @@ function afficheMap () {
     var map = document.getElementById ('map-frame');
     map.hidden = false;
     
-    window.onresize = resizeMap;    
+    window.onresize = resizeMap;
+    $('#map-modal').width(map.clientHeight);
+    $('#map-modal').height (map.clientHeight);
+    resizeMap ();
 }
 
 function resizeFrame () {
     var viewer = document.createElement ("iframe");
+    viewer.id = "viewer";
     var container = document.getElementById('frame');
     container.hidden = false;
 
@@ -106,22 +123,24 @@ function resizeFrame () {
     container.appendChild (viewer);
     
     var nav = document.getElementById ('navbar');
-    viewer.src="pages/iframe.html";
+    viewer.src = "pages/iframe.html";
+    viewer.contentDocument.images += ($('#img').innerHtml);
+    
+    $('#map-modal').width(map.clientWidth);
+    $('#map-modal').height (map.clientHeight);
     
     viewer.width = $('#frame').width ();
     viewer.height = (window.outerHeight - nav.clientHeight) * 0.6;
-    viewer.setAttribute( 'scrolling', 'no' );  
+    viewer.setAttribute( 'scrolling', 'no' );
+
 }
 
 function setDisplay () {
-
+    
     $(document).ready (resizeFrame);
     window.onresize = resizeFrame;
     resizeFrame ();
 
     var map = document.getElementById ('map-frame');    
     map.hidden = true;
-
 }
-
-
