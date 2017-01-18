@@ -22,7 +22,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
         page. However, you can choose any other skin. Make sure you
         apply the skin class to the body tag so the changes take effect.
-  -->
+    -->
+  <link rel="stylesheet" href="bootstrap/ionslider/ion.rangeSlider.css">
+  <link rel="stylesheet" href="bootstrap/css/bootstrap-slider/slider.css">
   <link rel="stylesheet" href="dist/css/skins/skin-blue.min.css">
   <link rel="stylesheet" href="https://openlayers.org/en/v3.10.1/css/ol.css" type="text/css">
   <script src="https://openlayers.org/en/v3.10.1/build/ol.js"></script>
@@ -187,8 +189,11 @@ desired effect
 	    </div>
 	    <div class="modal-body">
 	      <div id="map-frame" class="map"></div>
-	      <img id="img" style="display: none;"> </img>
-	      <div id="frame"  style="width: 100%;">  </div>
+	      <div id="3d-content">			
+		<img id="img" style="display: none;"> </img>
+		<div id="frame"  style="width: 100%;">  </div>
+		<input type="range" id="range">
+	      </div>
 	    </div>
 	    <div class="modal-footer">
 	      <button id="OK-map" class="btn btn-primary" type="button"> Ok </button>

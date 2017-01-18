@@ -72,7 +72,7 @@ function resizeMap () {
     ok.style.display = 'ok';
     
     var modal = document.getElementById ('map-modal');
-    var container = document.getElementById ('frame');	
+    var container = document.getElementById ('3d-content');	
     container.hidden = true;
     
     var nav = document.getElementById ('navbar');
@@ -90,7 +90,7 @@ function afficheMap () {
     var ok = document.getElementById ('OK-map');	
     ok.style.display = '';
     
-    var container = document.getElementById ('frame');	
+    var container = document.getElementById ('3d-content');	
     container.hidden = true;    
 
     var map = document.getElementById ('map-frame');
@@ -105,8 +105,10 @@ function afficheMap () {
 function resizeFrame () {
     var viewer = document.createElement ("iframe");
     viewer.id = "viewer";
+    var d3 = document.getElementById ('3d-content');
+    d3.hidden = false;
+    
     var container = document.getElementById('frame');
-    container.hidden = false;
 
     var retour = document.getElementById ('RETOUR-map');	
     retour.style.display = '';

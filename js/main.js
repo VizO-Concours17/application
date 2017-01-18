@@ -1,9 +1,10 @@
 
 var scene, camera, renderer;
-var geometry, material, mesh;
 var ancx = -1, ancy = -1, start;
 var phi = 0, teta = 60, target;
 var precise = .3;
+
+var meshPerYear, currentYear;
 
 var points;
 
@@ -52,8 +53,147 @@ animate ();
  */
 function init() {
 
+    createBasicRender ();    
+    computeViewMatrix ();
+    var datas = fillPoints ();           
+    createDatas (datas);
+
+
+    for (var i = 0; i < meshPerYear [0].length; i++) {
+	scene.add (meshPerYear [0][i]);
+    }
+    currentYear = 0;
+
+   
+    var range = window.parent.document.getElementById ('range');
+    range.max = meshPerYear.length - 1;
+    range.value = 0;
+    range.onchange = rangeChanged;
+}
+
+
+function rangeChanged () {
+    var range = window.parent.document.getElementById ('range');
+    var y1 = currentYear;
+    currentYear = range.value;
+    changeYear (y1, currentYear);
+}
+
+
+/**
+   Fonction qui va appeler les informations de la base pour connaître les différents points.
+ */
+function fillPoints () {
+    var points = [];
+    for (var i = 0; i < 50; i++) {
+	points.push ([])
+	for (var year = 0; year  < 4; year++) {	    
+	    points [i].push ({x : (Math.random () * 1000) - 500,
+			      y : Math.random () * 1000 - 500,
+			      z : (Math.random () * 100 + 200),
+			      lineColor : (Math.random()*0xFFFFFF<<0),
+			      lineWidth : (Math.random () * 10) + 5,
+			      sphereColor : (Math.random()*0xFFFFFF<<0),
+			      sphereRadius : (Math.random () * 10) + 15});
+	    
+	}
+    }
+    return points;
+}
+
+function createDatas (datas) {
+    meshPerYear = [];
+    if (datas.length > 0) {
+	for (var year = 0; year < datas [0].length; year++) {
+	    var total = [];
+	    for (var i = 0; i < datas.length; i++) {
+		var ret = createBoxe (datas [i][year], year);
+		for (var m = 0; m < ret.length; m++)
+		    total.push (ret [m]);
+	    }
+	    console.log (total);
+	    meshPerYear.push (total);
+	}
+    }
+}
+
+function changeYear (y1, y2) {
+    for (var i = 0; i < meshPerYear [y1].length; i++)
+	scene.remove (meshPerYear [y1][i]);
+    for (var i = 0; i < meshPerYear [y2].length; i++)
+	scene.add (meshPerYear [y2][i]);
+}
+
+function createBoxe (data, year) {
+    var box = new THREE.BoxGeometry (data['lineWidth'] * 4, 5, data['lineWidth'] * 4);
+    var cyl = new THREE.CylinderGeometry (data['lineWidth'], data['lineWidth'], data['z'], 10, 10, false, 0, 6.3);
+    var sphere = new THREE.SphereGeometry (data['sphereRadius'], 10, 10);
+    var cyl_mat = new THREE.MeshLambertMaterial ({color : data['lineColor']});    
+    var sph_mat = new THREE.MeshLambertMaterial ({color : data['sphereColor']});
+    var cyl_mesh = new THREE.Mesh (cyl, cyl_mat);
+    cyl_mesh.position.x = data ['x'];
+    cyl_mesh.position.y = -data ['z'] / 2 + 500;
+    cyl_mesh.position.z = data ['y'];
+    cyl_mesh.castShadow = true;
+    
+    var box_mesh = new THREE.Mesh (box, cyl_mat);
+    box_mesh.position.x = data['x'];
+    box_mesh.position.z = data['y'];
+    box_mesh.position.y = 500;
+    box_mesh.castShadow = true;
+    
+    var sph_mesh = new THREE.Mesh (sphere, sph_mat);
+    sph_mesh.position.x = data['x'];
+    sph_mesh.position.y = -data['z'] + 500;
+    sph_mesh.position.z = data['y'];
+    sph_mesh.castShadow = true;
+    
+    return [sph_mesh, cyl_mesh, box_mesh];
+}
+
+
+/**
+   Mise a jour de la camera quand on bouge la souris
+ */
+function cameraUpdate (event) {
+    var x = event.clientX, y = event.clientY;
+    if (event.buttons != 0) {
+	if (ancx != -1) {
+	    var posx = ancx - x;
+	    var posy = ancy - y;
+	    phi = (phi + Math.trunc (precise * posx)) % 360;
+	    teta = (teta - Math.trunc(precise * posy)) % 360;
+	    if (teta < 1) teta = 1;
+	    if (teta > 170) teta = 179;
+	}
+	
+	computeViewMatrix ();
+	ancx = x;
+	ancy = y;	
+    } else {
+	ancx = -1;
+	ancy = -1;
+    }
+}
+
+/**
+   Calcule de la matrice de vue de la camera (coordonnées)
+ */
+function computeViewMatrix () {
+    var pos = camera.position;
+    var radius = Math.abs (pos.distanceTo(target));
+    
+    pos.x = target.x + radius * Math.sin (teta * Math.PI / 180.0) * Math.sin (phi * Math.PI / 180.0);
+    pos.y = target.y + radius * Math.cos (teta * Math.PI / 180.0);
+    pos.z = target.z + radius * Math.sin (teta * Math.PI / 180.0) * Math.cos (phi * Math.PI / 180.0);
+    
+    camera.position = pos;
+    camera.lookAt (target);
+}
+
+function createBasicRender () {
     scene = new THREE.Scene();    
-        
+    
     scene.add( new THREE.AmbientLight( 0x101010 ) );
     
     var light = new THREE.SpotLight( 0xffffff, 1.5 );
@@ -112,15 +252,9 @@ function init() {
 
     
     document.body.appendChild( renderer.domElement );
-
     stats = new Stats();
     document.body.appendChild( stats.dom );
     
-    computeViewMatrix ();
-    var datas = fillPoints ();
-           
-    designScene (datas, 0);
-
     var pos = camera.position;
     var radius = Math.abs (pos.distanceTo(target));    
     
@@ -141,125 +275,8 @@ function init() {
     }
 
     gui.add (radiusController, "Distance", Math.ceil (radius), Math.ceil (2.0 * radius), Math.ceil (radius / 100.0)).onChange (distChange);
-    
-    
-}
 
-
-/**
-   Fonction qui va appeler les informations de la base pour connaître les différents points.
- */
-function fillPoints () {
-    var points = [];
-    for (var i = 0; i < 50; i++) {
-	points.push ([])
-	for (var year = 0; year  < 1; year++) {	    
-	    points [i].push ({x : (Math.random () * 1000) - 500,
-			      y : Math.random () * 1000 - 500,
-			      z : (Math.random () * 100 + 200),
-			      lineColor : (Math.random()*0xFFFFFF<<0),
-			      lineWidth : (Math.random () * 10) + 5,
-			      sphereColor : (Math.random()*0xFFFFFF<<0),
-			      sphereRadius : (Math.random () * 10) + 15});
-	    
-	}
-    }
-    return points;
-}
-
-function designScene (datas, year) {
-    for (var i = 0; i < datas.length; i++) {
-	createBoxe (datas [i][year]);
-    }
-}
-
-function createBoxe (data) {
-    var box = new THREE.BoxGeometry (data['lineWidth'] * 4, 5, data['lineWidth'] * 4);
-    var cyl = new THREE.CylinderGeometry (data['lineWidth'], data['lineWidth'], data['z'], 10, 10, false, 0, 6.3);
-    var sphere = new THREE.SphereGeometry (data['sphereRadius'], 10, 10);
-    var cyl_mat = new THREE.MeshLambertMaterial ({color : data['lineColor']});    
-    var sph_mat = new THREE.MeshLambertMaterial ({color : data['sphereColor']});
-    var cyl_mesh = new THREE.Mesh (cyl, cyl_mat);
-    cyl_mesh.position.x = data ['x'];
-    cyl_mesh.position.y = -data ['z'] / 2 + 500;
-    cyl_mesh.position.z = data ['y'];
-    cyl_mesh.castShadow = true;
     
-    var box_mesh = new THREE.Mesh (box, cyl_mat);
-    box_mesh.position.x = data['x'];
-    box_mesh.position.z = data['y'];
-    box_mesh.position.y = 500;
-    box_mesh.castShadow = true;
-    
-    var sph_mesh = new THREE.Mesh (sphere, sph_mat);
-    sph_mesh.position.x = data['x'];
-    sph_mesh.position.y = -data['z'] + 500;
-    sph_mesh.position.z = data['y'];
-    sph_mesh.castShadow = true;
-
-    var canvas1 = document.createElement('canvas');
-    var context1 = canvas1.getContext('2d');
-    context1.font = "Bold 10px Arial";
-    context1.fillStyle = "rgba(255,0,0,1)";
-    context1.fillText('Hello, world!', 0, 60);
-    
-    // canvas contents will be used for a texture
-    var texture1 = new THREE.Texture(canvas1)
-    texture1.needsUpdate = true;
-    
-    var material1 = new THREE.MeshBasicMaterial({ map: texture1, side: THREE.DoubleSide });
-    material1.transparent = true;
-    
-    var mesh1 = new THREE.Mesh(
-        new THREE.PlaneGeometry(50, 10),
-        material1
-    );
-    
-    mesh1.position.set (10, 10, 10);    
-    box_mesh.add(mesh1);
-    
-    mesh += [sph_mesh, cyl_mesh, box_mesh, mesh1];
-    scene.add (sph_mesh, cyl_mesh, box_mesh);
-}
-
-
-/**
-   Mise a jour de la camera quand on bouge la souris
- */
-function cameraUpdate (event) {
-    var x = event.clientX, y = event.clientY;
-    if (event.buttons != 0) {
-	if (ancx != -1) {
-	    var posx = ancx - x;
-	    var posy = ancy - y;
-	    phi = (phi + Math.trunc (precise * posx)) % 360;
-	    teta = (teta - Math.trunc(precise * posy)) % 360;
-	    if (teta < 1) teta = 1;
-	    if (teta > 170) teta = 179;
-	}
-	
-	computeViewMatrix ();
-	ancx = x;
-	ancy = y;	
-    } else {
-	ancx = -1;
-	ancy = -1;
-    }
-}
-
-/**
-   Calcule de la matrice de vue de la camera (coordonnées)
- */
-function computeViewMatrix () {
-    var pos = camera.position;
-    var radius = Math.abs (pos.distanceTo(target));
-    
-    pos.x = target.x + radius * Math.sin (teta * Math.PI / 180.0) * Math.sin (phi * Math.PI / 180.0);
-    pos.y = target.y + radius * Math.cos (teta * Math.PI / 180.0);
-    pos.z = target.z + radius * Math.sin (teta * Math.PI / 180.0) * Math.cos (phi * Math.PI / 180.0);
-    
-    camera.position = pos;
-    camera.lookAt (target);
 }
 
 
