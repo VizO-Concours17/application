@@ -3,6 +3,10 @@ var selected = false;
 
 init ();
 
+
+/**
+   A l'initialisation, on affiche la carte
+*/
 function init () {
     if (!selected) {
 	setMapSize ();
@@ -11,6 +15,9 @@ function init () {
     }
 }
 
+/**
+   Centre la map sur la france, genere l'evenement du bouton OK
+*/
 function setMapSize () {
    
     function onOk () {
@@ -62,6 +69,9 @@ function setMapSize () {
     onOk ();
 }
 
+/**
+   Retaille la map après un changement de taille d'ecran
+*/
 function resizeMap () {
     var map = document.getElementById ('map');
 
@@ -83,6 +93,9 @@ function resizeMap () {
 }
 
 
+/**
+   Affiche la map (utilisé quand on appuie sur le bouton retour), et remet les événements comme il faut
+ */
 function afficheMap () {
     var retour = document.getElementById ('RETOUR-map');
     retour.style.display = 'none';
@@ -102,6 +115,9 @@ function afficheMap () {
     resizeMap ();
 }
 
+/**
+   Retaille le rendu 3d quand on change la taille de la fenetre
+*/
 function resizeFrame () {
     var viewer = document.createElement ("iframe");
     viewer.id = "viewer";
@@ -137,6 +153,10 @@ function resizeFrame () {
 
 }
 
+/**
+   On affiche le rendu 3d.
+   Met a jour les événements
+*/
 function setDisplay () {
     
     $(document).ready (resizeFrame);

@@ -73,6 +73,9 @@ function init() {
 }
 
 
+/**
+   On a changer l'année en cours, on modifie les mesh a afficher
+ */
 function rangeChanged () {
     var range = window.parent.document.getElementById ('range');
     var y1 = currentYear;
@@ -82,7 +85,9 @@ function rangeChanged () {
 
 
 /**
-   Fonction qui va appeler les informations de la base pour connaÃ®tre les diffÃ©rents points.
+   Fonction qui va appeler les informations de la base pour connaitre les differents points.
+   TODO, pour le moment on fait au hasard
+   Cette fonction devra aussi récuperer les informations de masse d'eau, params...
  */
 function fillPoints () {
     var points = [];
@@ -102,13 +107,16 @@ function fillPoints () {
     return points;
 }
 
+/**
+   On cree les meshs associes aux points.
+ */
 function createDatas (datas) {
     meshPerYear = [];
     if (datas.length > 0) {
 	for (var year = 0; year < datas [0].length; year++) {
 	    var total = [];
 	    for (var i = 0; i < datas.length; i++) {
-		var ret = createBoxe (datas [i][year], year);
+		var ret = createBoxe (datas [i][year]);
 		for (var m = 0; m < ret.length; m++)
 		    total.push (ret [m]);
 	    }
@@ -118,6 +126,9 @@ function createDatas (datas) {
     }
 }
 
+/**
+   Le range a changer, on change les mesh que l'on affiche
+*/
 function changeYear (y1, y2) {
     for (var i = 0; i < meshPerYear [y1].length; i++)
 	scene.remove (meshPerYear [y1][i]);
@@ -125,7 +136,10 @@ function changeYear (y1, y2) {
 	scene.add (meshPerYear [y2][i]);
 }
 
-function createBoxe (data, year) {
+/**
+   On cree les mesh associe a un point
+ */
+function createBoxe (data) {
     var box = new THREE.BoxGeometry (data['lineWidth'] * 4, 5, data['lineWidth'] * 4);
     var cyl = new THREE.CylinderGeometry (data['lineWidth'], data['lineWidth'], data['z'], 10, 10, false, 0, 6.3);
     var sphere = new THREE.SphereGeometry (data['sphereRadius'], 10, 10);
@@ -192,6 +206,9 @@ function computeViewMatrix () {
     camera.lookAt (target);
 }
 
+/**
+   Initialise le contexte, affiche la carte, la grille et genere la scene.
+*/
 function createBasicRender () {
     scene = new THREE.Scene();    
     
@@ -286,7 +303,9 @@ function createBasicRender () {
     
 }
 
-
+/**
+   TODO
+*/
 function createRay (event) {
     var x = event.clientX, y = event.clientY;
     x = (2.0 * x) / window.innerWidth - 1.0;
@@ -310,6 +329,9 @@ function createRay (event) {
 
 }
 
+/**
+   TODO
+*/
 function intersect (cube, ray) {
 }
 
@@ -320,10 +342,7 @@ function intersect (cube, ray) {
  */
 function animate() {
 
-    requestAnimationFrame( animate );
-    
-    //mesh[1].position.x = 250;
-    
+    requestAnimationFrame( animate );       
     renderer.render( scene, camera );    
     stats.update();    
 }
