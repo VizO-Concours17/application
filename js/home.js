@@ -37,6 +37,7 @@ function setMapSize () {
 
 	map.getView().setCenter (ol.proj.transform ([2, 46.5], 'EPSG:4326', 'EPSG:3857'));
 	var buttonOk = document.getElementById ('OK-map');
+	
 	buttonOk.addEventListener ('click', function (e) {
 	    map.once ('precompose', function (event) {
 		var canvas = event.context.canvas;
@@ -61,11 +62,36 @@ function setMapSize () {
 	    map.renderSync ();
 	    setDisplay ();
 	}, false);
+
+	var search = document.getElementById ('GeoSearch');	
+	search.onsubmit = function (e) {
+	    var value = document.getElementById ('GeoSearchValue').value;	    
+	    $.ajax ({
+		url: "http://maps.google.com/maps/api/geocode/json?address=" + value + "+France",
+	    }).done (function (data) {
+		console.log (data);
+		map.getView ().setCenter (ol.proj.transformExtent ([data.results[0].geometry.bounds.northeast.lng,
+								    data.results[0].geometry.bounds.northeast.lat,
+								    data.results[0].geometry.bounds.southwest.lng,
+								    data.results[0].geometry.bounds.southwest.lat],
+								   'EPSG:4326', 'EPSG:3857'));
+
+		map.getView().fit(ol.proj.transformExtent ([data.results[0].geometry.bounds.northeast.lng,
+							    data.results[0].geometry.bounds.northeast.lat,
+							    data.results[0].geometry.bounds.southwest.lng,
+							    data.results[0].geometry.bounds.southwest.lat],
+							   'EPSG:4326', 'EPSG:3857'), map.getSize ());
+		map.updateSize ();
+		console.log (map.getView ().calculateExtent (map.getSize ()));
+	    });
+	    
+	    return false;
+	};
     }
     
     $(document).ready (resizeMap);
     window.onresize = resizeMap;
-    resizeMap ();
+    resizeMap ();    
     onOk ();
 }
 
@@ -106,7 +132,7 @@ function afficheMap () {
     var container = document.getElementById ('3d-content');	
     container.hidden = true;    
 
-    var map = document.getElementById ('map-frame');
+    var map = document.getElementById ('map-content');
     map.hidden = false;
     
     window.onresize = resizeMap;
@@ -121,6 +147,7 @@ function afficheMap () {
 function resizeFrame () {
     var viewer = document.createElement ("iframe");
     viewer.id = "viewer";
+    
     var d3 = document.getElementById ('3d-content');
     d3.hidden = false;
     
@@ -163,6 +190,8 @@ function setDisplay () {
     window.onresize = resizeFrame;
     resizeFrame ();
 
-    var map = document.getElementById ('map-frame');    
+    var map = document.getElementById ('map-content');    
     map.hidden = true;
 }
+
+

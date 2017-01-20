@@ -93,10 +93,12 @@ function fillPoints () {
     var points = [];
     for (var i = 0; i < 50; i++) {
 	points.push ([])
+	var x = (Math.random () * 1000) - 500, y = (Math.random () * 1000) - 500, z = (Math.random () * 100);
 	for (var year = 0; year  < 4; year++) {	    
-	    points [i].push ({x : (Math.random () * 1000) - 500,
-			      y : Math.random () * 1000 - 500,
-			      z : (Math.random () * 100 + 200),
+	    points [i].push ({x : x,
+			      y : y,
+			      z : z,
+			      depth : Math.random () * 100 + 200,
 			      lineColor : (Math.random()*0xFFFFFF<<0),
 			      lineWidth : (Math.random () * 10) + 5,
 			      sphereColor : (Math.random()*0xFFFFFF<<0),
@@ -141,25 +143,25 @@ function changeYear (y1, y2) {
  */
 function createBoxe (data) {
     var box = new THREE.BoxGeometry (data['lineWidth'] * 4, 5, data['lineWidth'] * 4);
-    var cyl = new THREE.CylinderGeometry (data['lineWidth'], data['lineWidth'], data['z'], 10, 10, false, 0, 6.3);
+    var cyl = new THREE.CylinderGeometry (data['lineWidth'], data['lineWidth'], data['depth'], 10, 10, false, 0, 6.3);
     var sphere = new THREE.SphereGeometry (data['sphereRadius'], 10, 10);
     var cyl_mat = new THREE.MeshLambertMaterial ({color : data['lineColor']});    
     var sph_mat = new THREE.MeshLambertMaterial ({color : data['sphereColor']});
     var cyl_mesh = new THREE.Mesh (cyl, cyl_mat);
     cyl_mesh.position.x = data ['x'];
-    cyl_mesh.position.y = -data ['z'] / 2 + 500;
+    cyl_mesh.position.y = (data ['z'] - data['depth'] / 2);
     cyl_mesh.position.z = data ['y'];
     cyl_mesh.castShadow = true;
     
     var box_mesh = new THREE.Mesh (box, cyl_mat);
     box_mesh.position.x = data['x'];
     box_mesh.position.z = data['y'];
-    box_mesh.position.y = 500;
+    box_mesh.position.y = data ['z'];
     box_mesh.castShadow = true;
     
     var sph_mesh = new THREE.Mesh (sphere, sph_mat);
     sph_mesh.position.x = data['x'];
-    sph_mesh.position.y = -data['z'] + 500;
+    sph_mesh.position.y = data['z'] - data['depth'];
     sph_mesh.position.z = data['y'];
     sph_mesh.castShadow = true;
     
@@ -215,7 +217,7 @@ function createBasicRender () {
     scene.add( new THREE.AmbientLight( 0x101010 ) );
     
     var light = new THREE.SpotLight( 0xffffff, 1.5 );
-    light.position.set( 0, 1500, 200 );
+    light.position.set( 0, 1000, 200 );
     light.castShadow = true;    
     light.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 70, 1, 200, 2000 ) );
     light.shadow.bias = - 0.00022;
@@ -237,7 +239,7 @@ function createBasicRender () {
     planeMaterial.opacity = 0.1;
     
     var plane = new THREE.Mesh( planeGeometry, planeMaterial );
-    plane.position.y = 100;
+    plane.position.y = -500;
     plane.receiveShadow = true;
     scene.add( plane );
 
@@ -251,11 +253,11 @@ function createBasicRender () {
 
     
     map = new THREE.Mesh( planeGeometry, mapMaterial );
-    map.position.y = 500;
+    map.position.y = 0;
     scene.add (map);
     
     var helper = new THREE.GridHelper( 1000, 100 );
-    helper.position.y = 100;
+    helper.position.y = -500;
     helper.material.opacity = 0.6;
     helper.material.transparent = true;
     scene.add( helper );
