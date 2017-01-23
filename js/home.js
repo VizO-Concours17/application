@@ -120,7 +120,11 @@ function resize3dContent () {
     container.appendChild (viewer);
     
     var nav = document.getElementById ('navbar');
-    viewer.src = "pages/iframe.html";
+    
+    var location = window.location.href;
+    location = location.substr (0, location.lastIndexOf ('/'));
+    viewer.src = location + "/pages/iframe.html";
+    
     viewer.contentDocument.images += ($('#3d-texture').innerHtml);
     
     viewer.width = '100%';
