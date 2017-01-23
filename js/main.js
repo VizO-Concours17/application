@@ -269,6 +269,7 @@ function createBasicRender () {
     helper.material.opacity = 0.6;
     helper.material.transparent = true;
     scene.add( helper );
+
     
     renderer = new THREE.WebGLRenderer({antialias : true });    
     renderer.setClearColor( 0xf0f0f0 );
@@ -316,7 +317,8 @@ function createPickingDatas () {
     raycaster = new THREE.Raycaster ();
 }
 
-var INTERSECTED;
+
+var highlits = [];
 
 function addToolTip () {
     
@@ -331,35 +333,33 @@ function pick (event) {
     var intersects = raycaster.intersectObjects (meshPerYear [currentYear]);
     if (intersects.length > 0) {
 
-        if ( INTERSECTED ) {
-	    for (var i = 0; i < 3; i++) {
-		var obj = meshPerYear [currentYear] [3 * INTERSECTED + i];
-		obj.material = obj.currentMat;
+        if ( highlits ) {
+	    for (var i = 0; i < highlits.length; i++) {
+		scene.remove (highlits [i]);
 	    }
-	}
-            
+	    highlits = [];
+	}            
 	
-	renderer.domElement.add
-        INTERSECTED = intersects[ 0 ].object.idObj;
 	for (var i = 0; i < 3; i++) {
-	    var obj = meshPerYear [currentYear] [3 * INTERSECTED + i];
+	    var obj = meshPerYear [currentYear] [3 * intersects[0].object.idObj + i];
 	    var mat2 = new THREE.MeshBasicMaterial ({color : 0x00ff00, side : THREE.BackSide });
-	    obj.currentMat = obj.material;
-	    obj.material = mat2;
+	    var clone = new THREE.Mesh (obj.geometry, mat2);
+	    clone.position.set (obj.position.x, obj.position.y, obj.position.z);
+	    clone.scale.set (1.5, 1., 1.5);
+	    highlits.push (clone);
+	    scene.add (clone);
 	}
 	    
-	addToolTip (INTERSECTED);        
+	addToolTip (intersects [0].object.idObj);        
     } 
-    else 
-    {
-        if ( INTERSECTED ) {
-	    for (var i = 0; i < 3; i++) {
-		var obj = meshPerYear [currentYear] [3 * INTERSECTED + i];
-		obj.material = obj.currentMat;
+    else {
+	if (highlits) {
+	    for (var i = 0; i < highlits.length; i++) {
+		scene.remove (highlits [i]);
 	    }
         }
 
-        INTERSECTED = null;
+        highlits = [];
     }
 }
 
@@ -383,24 +383,4 @@ function animate() {
     requestAnimationFrame( animate );       
     renderer.render( scene, camera );    
     stats.update();    
-}
-
-
-
-// function for drawing rounded rectangles
-function roundRect(ctx, x, y, w, h, r) 
-{
-    ctx.beginPath();
-    ctx.moveTo(x+r, y);
-    ctx.lineTo(x+w-r, y);
-    ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-    ctx.lineTo(x+w, y+h-r);
-    ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-    ctx.lineTo(x+r, y+h);
-    ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-    ctx.lineTo(x, y+r);
-    ctx.quadraticCurveTo(x, y, x+r, y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();   
 }
