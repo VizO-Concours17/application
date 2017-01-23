@@ -3,6 +3,7 @@ var scene, camera, renderer;
 var ancx = -1, ancy = -1, start;
 var phi = 0, teta = 60, target;
 var precise = .3;
+var raycaster;
 
 
 var meshPerYear, currentYear;
@@ -28,7 +29,7 @@ var points;
 
    
    Code couleur : {pas de quantif : blanc, < 0.1 : jaune, 0.1 < x < 0.5 : orange, 0.5 < x < 5 : rouge, > 5 : rouge/noir}
- */
+*/
 
 /**
    cylindre suivi d'un polygone (par dÃ©faut une sphere)
@@ -48,13 +49,15 @@ var points;
 init ();
 animate ();
 
-
 /**
    Fonction qui initialise le contexte
- */
+*/
 function init() {
 
-    createBasicRender ();    
+    createBasicRender ();
+    createPickingDatas ();
+
+    
     computeViewMatrix ();
     var datas = fillPoints ();           
     createDatas (datas);
@@ -65,17 +68,19 @@ function init() {
     }
     currentYear = 0;
 
-   
+    
     var range = window.parent.document.getElementById ('range');
-    range.max = meshPerYear.length - 1;
-    range.value = 0;
-    range.onchange = rangeChanged;
+    if (range != null) {
+	range.max = meshPerYear.length - 1;
+	range.value = 0;
+	range.onchange = rangeChanged;
+    }
 }
 
 
 /**
    On a changer l'année en cours, on modifie les mesh a afficher
- */
+*/
 function rangeChanged () {
     var range = window.parent.document.getElementById ('range');
     var y1 = currentYear;
@@ -88,7 +93,7 @@ function rangeChanged () {
    Fonction qui va appeler les informations de la base pour connaitre les differents points.
    TODO, pour le moment on fait au hasard
    Cette fonction devra aussi récuperer les informations de masse d'eau, params...
- */
+*/
 function fillPoints () {
     var points = [];
     for (var i = 0; i < 50; i++) {
@@ -111,7 +116,7 @@ function fillPoints () {
 
 /**
    On cree les meshs associes aux points.
- */
+*/
 function createDatas (datas) {
     meshPerYear = [];
     if (datas.length > 0) {
@@ -119,10 +124,11 @@ function createDatas (datas) {
 	    var total = [];
 	    for (var i = 0; i < datas.length; i++) {
 		var ret = createBoxe (datas [i][year]);
-		for (var m = 0; m < ret.length; m++)
+		for (var m = 0; m < ret.length; m++) {
 		    total.push (ret [m]);
+		    ret [m].idObj = i;
+		}
 	    }
-	    console.log (total);
 	    meshPerYear.push (total);
 	}
     }
@@ -140,13 +146,14 @@ function changeYear (y1, y2) {
 
 /**
    On cree les mesh associe a un point
- */
+*/
 function createBoxe (data) {
     var box = new THREE.BoxGeometry (data['lineWidth'] * 4, 5, data['lineWidth'] * 4);
     var cyl = new THREE.CylinderGeometry (data['lineWidth'], data['lineWidth'], data['depth'], 10, 10, false, 0, 6.3);
     var sphere = new THREE.SphereGeometry (data['sphereRadius'], 10, 10);
     var cyl_mat = new THREE.MeshLambertMaterial ({color : data['lineColor']});    
     var sph_mat = new THREE.MeshLambertMaterial ({color : data['sphereColor']});
+    
     var cyl_mesh = new THREE.Mesh (cyl, cyl_mat);
     cyl_mesh.position.x = data ['x'];
     cyl_mesh.position.y = (data ['z'] - data['depth'] / 2);
@@ -171,7 +178,7 @@ function createBoxe (data) {
 
 /**
    Mise a jour de la camera quand on bouge la souris
- */
+*/
 function cameraUpdate (event) {
     var x = event.clientX, y = event.clientY;
     if (event.buttons != 0) {
@@ -195,7 +202,7 @@ function cameraUpdate (event) {
 
 /**
    Calcule de la matrice de vue de la camera (coordonnÃ©es)
- */
+*/
 function computeViewMatrix () {
     var pos = camera.position;
     var radius = Math.abs (pos.distanceTo(target));
@@ -206,6 +213,7 @@ function computeViewMatrix () {
     
     camera.position = pos;
     camera.lookAt (target);
+    camera.updateMatrixWorld (true);
 }
 
 /**
@@ -268,8 +276,7 @@ function createBasicRender () {
     renderer.gammaOutput = true;
     renderer.shadowMap.enabled = true;
     renderer.domElement.onmousemove = cameraUpdate;
-    renderer.domElement.onclick = createRay;
-
+    renderer.domElement.addEventListener ("mousemove", pick, false);
     
     document.body.appendChild( renderer.domElement );
     stats = new Stats();
@@ -301,52 +308,99 @@ function createBasicRender () {
 
     gui.add (radiusController, "Distance", Math.ceil (radius), Math.ceil (2.0 * radius), Math.ceil (radius / 100.0)).onChange (distChange);
     gui.add (radiusController, "Transparence", 0.0, 1.0, 0.01).onChange (transparence);
-
     
 }
 
-/**
-   TODO
-*/
-function createRay (event) {
-    var x = event.clientX, y = event.clientY;
-    x = (2.0 * x) / window.innerWidth - 1.0;
-    y = 1.0 - (2.0 * y) / window.innerHeight;
-    var z = 1.0;
 
-    // normalized device coordinates
-    var ray_nds = new THREE.Vector3 (x, y, z);
+function createPickingDatas () {
+    raycaster = new THREE.Raycaster ();
+}
 
-    // homogenous clip coordinates
-    var ray_clip = new THREE.Vector4 (ray_nds.x, ray_nds.y, -1., 1.);
+var INTERSECTED;
+
+function addToolTip () {
     
-    //4D eye coordinates
-    var m = new THREE.Matrix4 ();
-    var ray_eye = ray_clip.applyMatrix4 (m.getInverse (camera.projectionMatrix));
-
-    // World transformation
-    var aux = ray_eye.applyMatrix4(camera.matrixWorldInverse);
-    var ray_wor = new THREE.Vector3(aux.x, aux.y, aux.z);
-    ray_wor = ray_wor.normalize (ray_wor);
-
 }
 
-/**
-   TODO
-*/
-function intersect (cube, ray) {
+function pick (event) {
+    var x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+    var y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+    var mouse = new THREE.Vector2 (x, y);
+    raycaster.setFromCamera (mouse, camera);
+    
+    var intersects = raycaster.intersectObjects (meshPerYear [currentYear]);
+    if (intersects.length > 0) {
+
+        if ( INTERSECTED ) {
+	    for (var i = 0; i < 3; i++) {
+		var obj = meshPerYear [currentYear] [3 * INTERSECTED + i];
+		obj.material = obj.currentMat;
+	    }
+	}
+            
+	
+	renderer.domElement.add
+        INTERSECTED = intersects[ 0 ].object.idObj;
+	for (var i = 0; i < 3; i++) {
+	    var obj = meshPerYear [currentYear] [3 * INTERSECTED + i];
+	    var mat2 = new THREE.MeshBasicMaterial ({color : 0x00ff00, side : THREE.BackSide });
+	    obj.currentMat = obj.material;
+	    obj.material = mat2;
+	}
+	    
+	addToolTip (INTERSECTED);        
+    } 
+    else 
+    {
+        if ( INTERSECTED ) {
+	    for (var i = 0; i < 3; i++) {
+		var obj = meshPerYear [currentYear] [3 * INTERSECTED + i];
+		obj.material = obj.currentMat;
+	    }
+        }
+
+        INTERSECTED = null;
+    }
 }
 
+function onPick (event) {
+    var x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+    var y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+    var mouse = new THREE.Vector2 (x, y);
+    raycaster.setFromCamera (mouse, camera);
+    
+    var intersects = raycaster.intersectObjects (meshPerYear [currentYear]);
+    if (intersects.length > 0) {
+	console.log ("print graph");
+    }
+}
 
 
 /**
    Rendu de la scene
- */
+*/
 function animate() {
-
     requestAnimationFrame( animate );       
     renderer.render( scene, camera );    
     stats.update();    
 }
 
 
+
+// function for drawing rounded rectangles
+function roundRect(ctx, x, y, w, h, r) 
+{
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.lineTo(x+w-r, y);
+    ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+    ctx.lineTo(x+w, y+h-r);
+    ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+    ctx.lineTo(x+r, y+h);
+    ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+    ctx.lineTo(x, y+r);
+    ctx.quadraticCurveTo(x, y, x+r, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();   
+}
