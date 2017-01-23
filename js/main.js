@@ -257,7 +257,7 @@ function createBasicRender () {
     plane.receiveShadow = true;
     scene.add( plane );
 
-    var img = window.parent.document.getElementById ('img');
+    var img = window.parent.document.getElementById ('3d-texture');
     var texture1 = new THREE.Texture (img);
     texture1.needsUpdate = true;    
     
