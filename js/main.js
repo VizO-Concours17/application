@@ -1,9 +1,9 @@
 
-var scene, camera, renderer;
+var scene, camera, renderer, labelRenderer;
 var ancx = -1, ancy = -1, start;
 var phi = 0, teta = 60, target;
 var precise = .3;
-var raycaster;
+var raycaster, labels;
 
 
 var meshPerYear, currentYear;
@@ -103,6 +103,8 @@ function fillPoints () {
 	    points [i].push ({x : x,
 			      y : y,
 			      z : z,
+			      labelBot : 'Bottom',
+			      labelTop : 'Top',
 			      depth : Math.random () * 100 + 200,
 			      lineColor : (Math.random()*0xFFFFFF<<0),
 			      lineWidth : (Math.random () * 10) + 5,
@@ -153,7 +155,7 @@ function createBoxe (data) {
     var sphere = new THREE.SphereGeometry (data['sphereRadius'], 10, 10);
     var cyl_mat = new THREE.MeshLambertMaterial ({color : data['lineColor']});    
     var sph_mat = new THREE.MeshLambertMaterial ({color : data['sphereColor']});
-    
+
     var cyl_mesh = new THREE.Mesh (cyl, cyl_mat);
     cyl_mesh.position.x = data ['x'];
     cyl_mesh.position.y = (data ['z'] - data['depth'] / 2);
@@ -165,12 +167,14 @@ function createBoxe (data) {
     box_mesh.position.z = data['y'];
     box_mesh.position.y = data ['z'];
     box_mesh.castShadow = true;
-    
+    box_mesh.name = data['labelTop'];
+        
     var sph_mesh = new THREE.Mesh (sphere, sph_mat);
     sph_mesh.position.x = data['x'];
     sph_mesh.position.y = data['z'] - data['depth'];
     sph_mesh.position.z = data['y'];
     sph_mesh.castShadow = true;
+    sph_mesh.name = data['labelBot'];
     
     return [sph_mesh, cyl_mesh, box_mesh];
 }
@@ -221,6 +225,8 @@ function computeViewMatrix () {
 */
 function createBasicRender () {
     scene = new THREE.Scene();    
+
+    labels = new THREE.Scene ();
     
     scene.add( new THREE.AmbientLight( 0x101010 ) );
     
@@ -274,12 +280,18 @@ function createBasicRender () {
     renderer = new THREE.WebGLRenderer({antialias : true });    
     renderer.setClearColor( 0xf0f0f0 );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.gammaOutput = true;
     renderer.shadowMap.enabled = true;
     renderer.domElement.onmousemove = cameraUpdate;
     renderer.domElement.addEventListener ("mousemove", pick, false);
+
+    labelRenderer = new THREE.CSS2DRenderer ();
+    labelRenderer.setSize (window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0';
+    labelRenderer.domElement.style.pointerEvents = 'none';    
     
     document.body.appendChild( renderer.domElement );
+    document.body.appendChild (labelRenderer.domElement);
     stats = new Stats();
     document.body.appendChild( stats.dom );
     
@@ -339,6 +351,8 @@ function pick (event) {
 	    }
 	    highlits = [];
 	}            
+	var sphere = meshPerYear [currentYear] [3 * intersects[0].object.idObj];
+	var box = meshPerYear [currentYear] [3 * intersects[0].object.idObj + 2];
 	
 	for (var i = 0; i < 3; i++) {
 	    var obj = meshPerYear [currentYear] [3 * intersects[0].object.idObj + i];
@@ -349,7 +363,31 @@ function pick (event) {
 	    highlits.push (clone);
 	    scene.add (clone);
 	}
-	    
+
+	var text = document.createElement ('div');
+	text.className = 'label';
+	text.style.color = 'rgb(10,10,0)';
+	text.style.backgroundColor = '#ffffff';
+	text.style.border = '2px solid black';
+	text.textContent = box.name;
+
+	var label = new THREE.CSS2DObject (text);
+	label.position.copy (box.position);	
+	highlits.push (label);
+	scene.add (label);
+
+	var text2 = document.createElement ('div');
+	text2.className = 'label';
+	text2.style.color = 'rgb(10,10,0)';
+	text2.style.backgroundColor = '#ffffff';
+	text2.style.border = '2px solid black';
+	text2.textContent = sphere.name;
+	
+	var label2 = new THREE.CSS2DObject (text2);
+	label2.position.copy (sphere.position);	
+	highlits.push (label2);
+	scene.add (label2);
+		    
 	addToolTip (intersects [0].object.idObj);        
     } 
     else {
@@ -381,6 +419,7 @@ function onPick (event) {
 */
 function animate() {
     requestAnimationFrame( animate );       
-    renderer.render( scene, camera );    
+    labelRenderer.render ( scene, camera );
+    renderer.render( scene, camera );
     stats.update();    
 }
