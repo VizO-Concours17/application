@@ -35,7 +35,6 @@ function setMapSize () {
 	    })
 	});
 
-	map.getView().setCenter (ol.proj.transform ([2, 46.5], 'EPSG:4326', 'EPSG:3857'));
 	var buttonOk = document.getElementById('map-ok');
 	
 	buttonOk.addEventListener ('click', function (e) {
@@ -48,7 +47,8 @@ function setMapSize () {
 		var ctx=canvas.getContext("2d");
 		ctx.scale(scaleFactor, scaleFactor);	
 	    });
-	    
+
+	    var coords;	    
 	    map.once ('postcompose', function (event) {
 		var canvas = event.context.canvas;
 		// On récupre l'image qu'on va convertir en texture
@@ -57,14 +57,16 @@ function setMapSize () {
 
 		// on récupere les coordonées de la map a envoyer au serveur		
 		var extent = map.getView ().calculateExtent (map.getSize ());
-		var coords = ol.proj.transformExtent (extent, 'EPSG:3857', 'EPSG:4326');		
+		coords = ol.proj.transformExtent (extent, 'EPSG:3857', 'EPSG:4326');		
 	    });
+
 	    map.renderSync ();
-	    setDisplay ();
+	    setDisplay (coords);
 	}, false);
 
 	var search = document.getElementById('geoSearch');
-	search.onsubmit = function (e) {
+	
+	function searchLocation () {
 	    var value = document.getElementById('geoSearchValue').value;
 	    $.ajax ({
 		url: "http://maps.google.com/maps/api/geocode/json?address=" + value + "+France",
@@ -85,8 +87,15 @@ function setMapSize () {
 		console.log (map.getView ().calculateExtent (map.getSize ()));
 	    });
 	    
+	}
+	
+	search.onsubmit = function (e) {
+	    searchLocation ();
 	    return false;
 	};
+
+	searchLocation ();
+
     }
     
     //$(document).ready (resizeMap);
@@ -137,16 +146,63 @@ function resize3dContent () {
 }
 
 /**
+   Ajoute une masse d'eau dans le menu
+*/
+function addMasse (name) {
+    var list = document.getElementById ("masseList");
+    var li = document.createElement ('li');
+    var label = document.createElement ('label');
+    label.style ['color'] = "#ddd";
+
+    li.appendChild (label);
+    var input = document.createElement ('input');
+    input.type = 'checkbox';
+    input.className = 'minimal';
+    label.innerHTML += "Masse d'eau " + name;
+
+    label.appendChild (input);
+    list.appendChild (li);
+}
+
+/**
    On affiche le rendu 3d.
    Met a jour les événements
 */
-function setDisplay () {
+function setDisplay (coords) {
     $(document).ready(resize3dContent);
-    window.onresize = resize3dContent;
-    resize3dContent();
+    window.onresize = resize3dContent;    
+    var location = window.location.href;
+    location = location.substr (0, location.lastIndexOf ('/'));
+    document.getElementById ('3d-coords').innerHTML =
+	"x=" + coords [0] + "&" +
+	"y=" + coords [1] + "&" +
+	"width=" + coords [2] + "&" +
+	"height=" + coords [3];   
+   
+    //TODO : Charger les données du filtre puis afficher le filtre    
+    $.ajax ({
+	url: location + "/pages/php/fillMenu.php?x=" + coords [0] +
+	    "&y=" + coords [1] +
+	    "&width=" + coords [2] +
+	    "&height=" + coords [3]
+	    
+    }).done (function (data) {
+	data = $.parseJSON (data);
 
-    //TODO : Charger les données du filtre puis afficher le filtre
+	var list = document.getElementById ("masseList");
+	
+	for (i = 0; i < list.children.length;)
+	    list.removeChild (list.children [i]);
+	
+	for (i = 0; i < data["masseeau"].length ; i++) {
+	    addMasse (data['masseeau'] [i]);
+	}
+	
+	$.getScript("plugins/iCheck/icheck.min.js");
+    });
+    
     $('.subblockmenu').css('visibility', 'visible');
+    resize3dContent();
 }
 
 

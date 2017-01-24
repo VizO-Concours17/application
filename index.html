@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from
 scratch. This page gets rid of all links and provides the needed markup only.
@@ -108,7 +108,7 @@ desired effect
             </nav>
         </header>
         <!-- Left side column. contains the logo and sidebar -->
-        <aside class="main-sidebar" style="overflow:auto">
+        <aside class="main-sidebar" style="overflow:auto;">
             <!-- sidebar: style can be found in sidebar.less -->
             <section class="sidebar">
                 <!-- Sidebar Menu -->
@@ -147,7 +147,7 @@ desired effect
 
 
                     <div class="form-group" style="overflow:auto;max-height:100px;">
-                        <ul style="padding-left:5px">
+                        <ul style="padding-left:5px" id="masseList">
                             <li>
                                 <label style="color:#ddd">
                                     <input type="checkbox" class="minimal" checked> Masse d'eau A
@@ -210,7 +210,7 @@ desired effect
 
                 <div class="row">
 
-                    <div class="col-md-7">
+                    <div class="col-md-8">
 
                         <div class="box">
                             <div class="box-header with-border">
@@ -235,10 +235,11 @@ desired effect
                             <!-- /.box-header -->
                             <div class="box-body">
                                 <div id="3d-content">
-                                    <img id="3d-texture" style="display: none;" />
-                                    <div id="3d-frame" style="width: 100%;height:500px;border:solid 1px #f4f4f4">
-                                        <div style="margin: auto;max-width: 600px;padding: 10px 50px 50px 50px;background-color: #eee;text-align: center;margin-top: 50px;font-size: 15px;">
-                                            <div style="font-size:70px"><i class="fa fa-cube"></i></div>
+                                    <img id="3d-texture" style="display: none;"/>
+				    <div id="3d-coords"	 style="display: none;"></div>
+				    <div id="3d-frame" style="width: 100%;height:500px;border:solid 1px #f4f4f4">
+                                      <div style="margin: auto;max-width: 600px;padding: 10px 50px 50px 50px;background-color: #eee;text-align: center;margin-top: 50px;font-size: 15px;">
+                                        <div style="font-size:70px"><i class="fa fa-cube"></i></div>
                                             Sélectionnez une zone géographique sur la carte dans la barre d'outils située à gauche de l'écran
                                         </div>
                                     </div>
@@ -264,7 +265,7 @@ desired effect
                     </div>
 
 
-                    <div class="col-md-5">
+                    <div class="col-md-4">
 
                         <div class="box">
                             <div class="box-header with-border">

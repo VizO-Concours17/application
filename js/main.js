@@ -59,22 +59,23 @@ function init() {
 
     
     computeViewMatrix ();
-    var datas = fillPoints ();           
-    createDatas (datas);
-
-
-    for (var i = 0; i < meshPerYear [0].length; i++) {
-	scene.add (meshPerYear [0][i]);
-    }
-    currentYear = 0;
-
-    
-    var range = window.parent.document.getElementById ('range');
-    if (range != null) {
-	range.max = meshPerYear.length - 1;
-	range.value = 0;
-	range.onchange = rangeChanged;
-    }
+    fillPoints (function (datas) {
+	createDatas (datas);	
+	console.log (meshPerYear);
+	
+	for (var i = 0; i < meshPerYear [0].length; i++) {
+	    scene.add (meshPerYear [0][i]);
+	}
+	currentYear = 0;
+	
+	
+	var range = window.parent.document.getElementById ('range');
+	if (range != null) {
+	    range.max = meshPerYear.length - 1;
+	    range.value = 0;
+	    range.onchange = rangeChanged;
+	}
+    });
 }
 
 
@@ -94,26 +95,18 @@ function rangeChanged () {
    TODO, pour le moment on fait au hasard
    Cette fonction devra aussi récuperer les informations de masse d'eau, params...
 */
-function fillPoints () {
-    var points = [];
-    for (var i = 0; i < 50; i++) {
-	points.push ([])
-	var x = (Math.random () * 1000) - 500, y = (Math.random () * 1000) - 500, z = (Math.random () * 100);
-	for (var year = 0; year  < 4; year++) {	    
-	    points [i].push ({x : x,
-			      y : y,
-			      z : z,
-			      labelBot : 'Bottom',
-			      labelTop : 'Top',
-			      depth : Math.random () * 100 + 200,
-			      lineColor : (Math.random()*0xFFFFFF<<0),
-			      lineWidth : (Math.random () * 10) + 5,
-			      sphereColor : (Math.random()*0xFFFFFF<<0),
-			      sphereRadius : (Math.random () * 10) + 15});
-	    
-	}
-    }
-    return points;
+function fillPoints (callback) {
+    var location = window.location.href;
+    location = location.substr (0, location.lastIndexOf ('/'));
+    var coords = window.parent.document.getElementById ('3d-coords').innerHTML.replace (/&amp;/g, '&');
+    console.log (coords);
+    $.ajax ({
+	url: location + "/php/criteres.php?" + coords 
+    }).done (function (data) {
+	console.log (data);
+	data = $.parseJSON (data);
+	callback (data);
+    });    
 }
 
 /**
@@ -243,7 +236,7 @@ function createBasicRender () {
     target = new THREE.Vector3 (0, 0, 0);
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
     
-    camera.position.z = 1000;
+    camera.position.z = 1500;
     camera.position.y = -500;
     camera.lookAt (target);
 
