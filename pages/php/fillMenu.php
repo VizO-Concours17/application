@@ -10,11 +10,20 @@ $y1 = $_GET["y1"];
 $x2 = $_GET["x2"];
 $y2 = $_GET["y2"];
 
-$data = array ('masseeau' => ['A', 'B', 'C']);
+$requete = "SELECT * from CONC_PT2 where X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2;
 
-$json_string = json_encode ($data);
-echo $json_string;
+$rep = $dbh->query ($requete);
 
-$dbh = null;
+$infos = array ('masse' => [], 'pest' => []);
+
+
+while ($donnee = $rep->fetch ()) {
+    if (!in_array ($donnee['CdMasseDEa'], $infos['masse'])) {
+	array_push ($infos['masse'], $donnee['CdMasseDEa']);
+    }    
+}
+
+echo json_encode ($infos);
+
 
 ?>

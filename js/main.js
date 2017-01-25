@@ -59,23 +59,33 @@ function init() {
 
     
     computeViewMatrix ();
-    fillPoints (function (datas) {
+    
+    
+    function arrangeDatas (datas) {
 	createDatas (datas);	
-	console.log (meshPerYear);
+	currentYear = meshPerYear.length - 1;
 	
-	for (var i = 0; i < meshPerYear [0].length; i++) {
-	    scene.add (meshPerYear [0][i]);
+	for (var i = 0; i < meshPerYear [currentYear].length; i++) {
+	    scene.add (meshPerYear [currentYear][i]);
 	}
-	currentYear = 0;
-	
 	
 	var range = window.parent.document.getElementById ('range');
 	if (range != null) {
-	    range.max = meshPerYear.length - 1;
-	    range.value = 0;
+	    range.setAttribute ('value', meshPerYear.length - 1);
+	    range.setAttribute ('data-value', meshPerYear.length - 1);
 	    range.onchange = rangeChanged;
 	}
-    });
+	
+    };
+
+    fillPoints (arrangeDatas);
+    
+    var buttonValide = window.parent.document.getElementById ('form-ok');
+    if (buttonValide != null) {
+	buttonValide.addEventListener ('click', function () {
+	    formOk (arrangeDatas);
+	});
+    }
 }
 
 
@@ -89,6 +99,37 @@ function rangeChanged () {
     changeYear (y1, currentYear);
 }
 
+
+function formOk (callback) {
+    // On supprime les donnees de la scene
+    if (meshPerYear.length > 0) {
+	for (var i = 0; i < meshPerYear [currentYear].length; i++)
+	    scene.remove (meshPerYear [currentYear][i]);
+	
+	meshPerYear = [];
+    }
+    
+    var location = window.location.href;
+    location = location.substr (0, location.lastIndexOf ('/'));
+    console.log (location);
+    var coords = window.parent.document.getElementById ('3d-coords').innerHTML.replace (/&amp;/g, '&');
+    var masse = "";
+    var list = window.parent.document.getElementById ('masseList');
+    for (var ch = 0 ; ch <  list.children.length; ch++) {
+	var div = list.children [ch].children [0].children [0];
+	if (div && (div.getAttribute ('aria-checked') == 'true' || div.className.indexOf ('checked') != -1)) {
+	    masse += "&masse[]=" + list.children [ch].children [0].getAttribute ('name');	    
+	}
+    }
+    
+    $.ajax ({
+	url: location + "/php/criteres.php?" + coords + masse 
+    }).done (function (data) {
+	data = $.parseJSON (data);
+	callback (data);
+    });    
+    
+}
 
 /**
    Fonction qui va appeler les informations de la base pour connaitre les differents points.
@@ -115,15 +156,16 @@ function createDatas (datas) {
     meshPerYear = [];
     for (var key in datas) {
 	var total = [];
-	for (var i = 0; i < datas [key].length; i++) {
-	    var ret = createBoxe (datas [key] [i]);
+	var i = 0;
+	for (var elem in datas [key]) {
+	    var ret = createBoxe (datas [key] [elem]);
 	    for (var m = 0; m < ret.length; m++) {
 		total.push (ret [m]);
 		ret [m].idObj = i;
-	    }	    
+	    }
+	    i++;
 	}
 	meshPerYear.push (total);
-	console.log (datas [key]);
     }    
 }
 
@@ -310,7 +352,7 @@ function createBasicRender () {
 	mapMaterial.opacity = radiusController.Transparence;
     });
 
-    gui.add (radiusController, "Distance", Math.ceil (radius), Math.ceil (2.0 * radius), Math.ceil (radius / 100.0)).onChange (distChange);
+    gui.add (radiusController, "Distance", Math.ceil (10), Math.ceil (2.0 * radius), Math.ceil (radius / 100.0)).onChange (distChange);
     gui.add (radiusController, "Transparence", 0.0, 1.0, 0.01).onChange (transparence);
     
 }
@@ -375,7 +417,8 @@ function pick (event) {
 	text2.textContent = sphere.name;
 	
 	var label2 = new THREE.CSS2DObject (text2);
-	label2.position.copy (sphere.position);	
+	label2.position.copy (sphere.position);
+	label2.position.y -= 55;
 	highlits.push (label2);
 	scene.add (label2);
 		    

@@ -158,9 +158,11 @@ function addMasse (name) {
     var input = document.createElement ('input');
     input.type = 'checkbox';
     input.className = 'minimal';
-    label.innerHTML += "Masse d'eau " + name;
-
+    input.setAttribute ('checked', 'true');
+    
     label.appendChild (input);
+    label.innerHTML += "  Masse d'eau " + name;
+    label.setAttribute('name', name);
     list.appendChild (li);
 }
 
@@ -187,18 +189,30 @@ function setDisplay (coords) {
 	    "&y2=" + coords [3]
 	    
     }).done (function (data) {
+
 	data = $.parseJSON (data);
 
 	var list = document.getElementById ("masseList");
 	
 	for (i = 0; i < list.children.length;)
 	    list.removeChild (list.children [i]);
-	
-	for (i = 0; i < data["masseeau"].length ; i++) {
-	    addMasse (data['masseeau'] [i]);
+	console.log (data);
+	for (i = 0; i < data["masse"].length ; i++) {
+	    addMasse (data['masse'] [i]);
 	}
 	
-	$.getScript("plugins/iCheck/icheck.min.js");
+        //CheckBoxes & Radio
+        $('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
+            checkboxClass: 'icheckbox_flat-green',
+            radioClass: 'iradio_flat-green'
+        });
+
+        $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
+            checkboxClass: 'icheckbox_minimal-blue',
+            radioClass: 'iradio_minimal-blue'
+        });
+
+	
     });
     
     $('.subblockmenu').css('visibility', 'visible');

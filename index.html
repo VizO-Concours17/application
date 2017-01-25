@@ -21,6 +21,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
 
     <link rel="stylesheet" href="plugins/iCheck/all.css">
+
     <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
           page. However, you can choose any other skin. Make sure you
           apply the skin class to the body tag so the changes take effect.
@@ -54,7 +55,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
         .subblockmenu{
             visibility:hidden
         }    
-    
+
+	#sidebar {
+	float:left;
+	width:330px;
+	text-align:center;
+	height:100px;
+	background:#eee;
+	padding:150px 5px;
+	overflow: auto;
+	}
+	
     </style>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -107,12 +118,13 @@ desired effect
                 </div>
             </nav>
         </header>
+	
         <!-- Left side column. contains the logo and sidebar -->
-        <aside class="main-sidebar" style="overflow:auto;">
-            <!-- sidebar: style can be found in sidebar.less -->
-            <section class="sidebar">
-                <!-- Sidebar Menu -->
+        <aside class="main-sidebar">
 
+            <!-- sidebar: style can be found in sidebar.less -->
+            <div class="sidebar slimScroll" >
+                <!-- Sidebar Menu -->
 
                 <div id="blockmenu-zoneetude" class="blockmenu">
                     <ul class="sidebar-menu">
@@ -146,7 +158,7 @@ desired effect
                     <div class="helpText">Affichez/Masquez les masses d'eau sur la vue 3D</div>
 
 
-                    <div class="form-group" style="overflow:auto;max-height:100px;">
+                    <div class="form-group" style="max-height:100px; overflow:auto;">
                         <ul style="padding-left:5px" id="masseList">
                             <li>
                                 <label style="color:#ddd">
@@ -167,7 +179,7 @@ desired effect
                         <li class="header">Molécule suivie</li>
                     </ul>
                     <div class="helpText">Sélectionnez la molécule à représenter sur la carte 3D</div>
-                    <div class="form-group" style="overflow:auto;max-height:100px;">
+                    <div class="form-group" style="max-height:100px; overflow:auto;">
                         <ul style="padding-left:5px">
                             <li>
                                 <label style="color:#ddd">
@@ -198,8 +210,18 @@ desired effect
                     </div>
                 </div>
 
+		 <div id="blockmenu-validation" class="subblockmenu">
+                    <div style="padding:3px">
+                        <button id="form-ok" class="btn btn-block
+                        btn-success" type="button"><i class="fa
+                        fa-cube"></i> Valider la recherche </button>
+                    </div>
+                </div>
+
+
                 <!-- /.sidebar-menu -->
-            </section>
+            </div>
+
             <!-- /.sidebar -->
         </aside>
         <!-- Content Wrapper. Contains page content -->
@@ -253,8 +275,9 @@ desired effect
                                     <label>Année des données :</label>
                                     <input id="range" type="text" value="" class="slider form-control"
                                            data-slider-orientation="horizontal"
-                                           data-slider-ticks="[0, 1, 2, 3, 4]"
-                                           data-slider-ticks-labels='["2008", "2009", "2010", "2011", "2012"]'
+                                           data-slider-ticks="[0, 1, 2, 3, 4, 5]"
+                                           data-slider-ticks-labels='["2007",
+                                    "2008", "2009", "2010", "2011", "2012"]'
                                            data-slider-tooltip="hide" />
                                 </div>
 
@@ -354,7 +377,6 @@ desired effect
             /* BOOTSTRAP SLIDER */
             $('.slider').slider();
         });
-
 
         //CheckBoxes & Radio
         $('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
