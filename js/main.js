@@ -103,7 +103,6 @@ function fillPoints (callback) {
     $.ajax ({
 	url: location + "/php/criteres.php?" + coords 
     }).done (function (data) {
-	console.log (data);
 	data = $.parseJSON (data);
 	callback (data);
     });    
@@ -114,19 +113,18 @@ function fillPoints (callback) {
 */
 function createDatas (datas) {
     meshPerYear = [];
-    if (datas.length > 0) {
-	for (var year = 0; year < datas [0].length; year++) {
-	    var total = [];
-	    for (var i = 0; i < datas.length; i++) {
-		var ret = createBoxe (datas [i][year]);
-		for (var m = 0; m < ret.length; m++) {
-		    total.push (ret [m]);
-		    ret [m].idObj = i;
-		}
-	    }
-	    meshPerYear.push (total);
+    for (var key in datas) {
+	var total = [];
+	for (var i = 0; i < datas [key].length; i++) {
+	    var ret = createBoxe (datas [key] [i]);
+	    for (var m = 0; m < ret.length; m++) {
+		total.push (ret [m]);
+		ret [m].idObj = i;
+	    }	    
 	}
-    }
+	meshPerYear.push (total);
+	console.log (datas [key]);
+    }    
 }
 
 /**

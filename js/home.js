@@ -174,17 +174,17 @@ function setDisplay (coords) {
     var location = window.location.href;
     location = location.substr (0, location.lastIndexOf ('/'));
     document.getElementById ('3d-coords').innerHTML =
-	"x=" + coords [0] + "&" +
-	"y=" + coords [1] + "&" +
-	"width=" + coords [2] + "&" +
-	"height=" + coords [3];   
+	"x1=" + coords [0] + "&" +
+	"y1=" + coords [1] + "&" +
+	"x2=" + coords [2] + "&" +
+	"y2=" + coords [3];   
    
     //TODO : Charger les données du filtre puis afficher le filtre    
     $.ajax ({
-	url: location + "/pages/php/fillMenu.php?x=" + coords [0] +
-	    "&y=" + coords [1] +
-	    "&width=" + coords [2] +
-	    "&height=" + coords [3]
+	url: location + "/pages/php/fillMenu.php?x1=" + coords [0] +
+	    "&y1=" + coords [1] +
+	    "&x2=" + coords [2] +
+	    "&y2=" + coords [3]
 	    
     }).done (function (data) {
 	data = $.parseJSON (data);
