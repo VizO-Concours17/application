@@ -89,7 +89,7 @@ function init() {
 	    range.setAttribute ('type', 'text');
 	    range.setAttribute ('id', 'range');
 	    var label = window.parent.document.createElement ('label');
-	    label.innerHTML = 'Année des données';
+	    label.id = 'rangeText';
 	    
 	    rangeDiv.appendChild (label);
 	    rangeDiv.appendChild (range);
@@ -98,6 +98,7 @@ function init() {
 	    range.onchange = rangeChanged;
 	}
 	window.parent.reloadStyle ();
+	$('#rangeText', window.parent.document).text ("Ann\351e des donn\351es");
     };
 
     fillPoints (arrangeDatas);
