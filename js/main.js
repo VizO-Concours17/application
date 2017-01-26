@@ -7,6 +7,7 @@ var raycaster, labels;
 
 
 var meshPerYear, currentYear;
+var years;
 
 var points;
 
@@ -49,6 +50,8 @@ var points;
 init ();
 animate ();
 
+
+
 /**
    Fonction qui initialise le contexte
 */
@@ -68,14 +71,33 @@ function init() {
 	for (var i = 0; i < meshPerYear [currentYear].length; i++) {
 	    scene.add (meshPerYear [currentYear][i]);
 	}
-	
-	var range = window.parent.document.getElementById ('range');
-	if (range != null) {
-	    range.setAttribute ('value', meshPerYear.length - 1);
-	    range.setAttribute ('data-value', meshPerYear.length - 1);
+
+	var rangeDiv = window.parent.document.getElementById ('rangeDiv');	
+	if (rangeDiv != null) {
+	    while (rangeDiv.children.length > 0)
+		rangeDiv.removeChild (rangeDiv.children [0]);
+	    var tabs = [];
+	    for (var i in years) tabs.push (i);
+	    
+	    
+	    var range = window.parent.document.createElement ('input');
+	    range.className = 'slider';
+	    range.setAttribute ('data-slider-orientation', 'horizontal');
+	    range.setAttribute ('data-slider-ticks', '[' + tabs.toString () + ']');
+	    range.setAttribute ('data-slider-ticks-labels', '[' + years.toString () + ']');
+	    range.setAttribute ('data-slider-tooltip', 'hide');
+	    range.setAttribute ('type', 'text');
+	    range.setAttribute ('id', 'range');
+	    var label = window.parent.document.createElement ('label');
+	    label.innerHTML = 'Année des données';
+	    
+	    rangeDiv.appendChild (label);
+	    rangeDiv.appendChild (range);
+	    
+	    range.setAttribute ('value', '0');	    
 	    range.onchange = rangeChanged;
 	}
-	
+	window.parent.reloadStyle ();
     };
 
     fillPoints (arrangeDatas);
@@ -154,7 +176,9 @@ function fillPoints (callback) {
 */
 function createDatas (datas) {
     meshPerYear = [];
+    years = [];
     for (var key in datas) {
+	years.push ('"' + key + '"');
 	var total = [];
 	var i = 0;
 	for (var elem in datas [key]) {
@@ -374,64 +398,65 @@ function pick (event) {
     var y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
     var mouse = new THREE.Vector2 (x, y);
     raycaster.setFromCamera (mouse, camera);
-    
-    var intersects = raycaster.intersectObjects (meshPerYear [currentYear]);
-    if (intersects.length > 0) {
-
-        if ( highlits ) {
-	    for (var i = 0; i < highlits.length; i++) {
-		scene.remove (highlits [i]);
+    if (meshPerYear.length > currentYear) {
+	var intersects = raycaster.intersectObjects (meshPerYear [currentYear]);
+	if (intersects.length > 0) {
+	    
+            if ( highlits ) {
+		for (var i = 0; i < highlits.length; i++) {
+		    scene.remove (highlits [i]);
+		}
+		highlits = [];
+	    }            
+	    var sphere = meshPerYear [currentYear] [3 * intersects[0].object.idObj];
+	    var box = meshPerYear [currentYear] [3 * intersects[0].object.idObj + 2];
+	    
+	    for (var i = 0; i < 3; i++) {
+		var obj = meshPerYear [currentYear] [3 * intersects[0].object.idObj + i];
+		var mat2 = new THREE.MeshBasicMaterial ({color : 0x00ff00, side : THREE.BackSide });
+		var clone = new THREE.Mesh (obj.geometry, mat2);
+		clone.position.set (obj.position.x, obj.position.y, obj.position.z);
+		clone.scale.set (1.5, 1., 1.5);
+		highlits.push (clone);
+		scene.add (clone);
 	    }
-	    highlits = [];
-	}            
-	var sphere = meshPerYear [currentYear] [3 * intersects[0].object.idObj];
-	var box = meshPerYear [currentYear] [3 * intersects[0].object.idObj + 2];
-	
-	for (var i = 0; i < 3; i++) {
-	    var obj = meshPerYear [currentYear] [3 * intersects[0].object.idObj + i];
-	    var mat2 = new THREE.MeshBasicMaterial ({color : 0x00ff00, side : THREE.BackSide });
-	    var clone = new THREE.Mesh (obj.geometry, mat2);
-	    clone.position.set (obj.position.x, obj.position.y, obj.position.z);
-	    clone.scale.set (1.5, 1., 1.5);
-	    highlits.push (clone);
-	    scene.add (clone);
+
+	    var text = document.createElement ('div');
+	    text.className = 'label';
+	    text.style.color = 'rgb(10,10,0)';
+	    text.style.backgroundColor = '#ffffff';
+	    text.style.border = '2px solid black';
+	    text.textContent = box.name;
+
+	    var label = new THREE.CSS2DObject (text);
+	    label.position.copy (box.position);	
+	    highlits.push (label);
+	    scene.add (label);
+
+	    var text2 = document.createElement ('div');
+	    text2.className = 'label';
+	    text2.style.color = 'rgb(10,10,0)';
+	    text2.style.backgroundColor = '#ffffff';
+	    text2.style.border = '2px solid black';
+	    text2.textContent = sphere.name;
+	    
+	    var label2 = new THREE.CSS2DObject (text2);
+	    label2.position.copy (sphere.position);
+	    label2.position.y -= 55;
+	    highlits.push (label2);
+	    scene.add (label2);
+	    
+	    addToolTip (intersects [0].object.idObj);        
+	} 
+	else {
+	    if (highlits) {
+		for (var i = 0; i < highlits.length; i++) {
+		    scene.remove (highlits [i]);
+		}
+            }
+
+            highlits = [];
 	}
-
-	var text = document.createElement ('div');
-	text.className = 'label';
-	text.style.color = 'rgb(10,10,0)';
-	text.style.backgroundColor = '#ffffff';
-	text.style.border = '2px solid black';
-	text.textContent = box.name;
-
-	var label = new THREE.CSS2DObject (text);
-	label.position.copy (box.position);	
-	highlits.push (label);
-	scene.add (label);
-
-	var text2 = document.createElement ('div');
-	text2.className = 'label';
-	text2.style.color = 'rgb(10,10,0)';
-	text2.style.backgroundColor = '#ffffff';
-	text2.style.border = '2px solid black';
-	text2.textContent = sphere.name;
-	
-	var label2 = new THREE.CSS2DObject (text2);
-	label2.position.copy (sphere.position);
-	label2.position.y -= 55;
-	highlits.push (label2);
-	scene.add (label2);
-		    
-	addToolTip (intersects [0].object.idObj);        
-    } 
-    else {
-	if (highlits) {
-	    for (var i = 0; i < highlits.length; i++) {
-		scene.remove (highlits [i]);
-	    }
-        }
-
-        highlits = [];
     }
 }
 

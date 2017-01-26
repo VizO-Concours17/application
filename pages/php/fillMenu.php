@@ -20,7 +20,8 @@ $infos = array ('masse' => [], 'pest' => []);
 while ($donnee = $rep->fetch ()) {
     if (!in_array ($donnee['CdMasseDEa'], $infos['masse'])) {
 	array_push ($infos['masse'], $donnee['CdMasseDEa']);
-    }    
+    }
+    
 }
 
 echo json_encode ($infos);

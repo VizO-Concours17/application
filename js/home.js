@@ -175,21 +175,16 @@ function setDisplay (coords) {
     window.onresize = resize3dContent;    
     var location = window.location.href;
     location = location.substr (0, location.lastIndexOf ('/'));
-    document.getElementById ('3d-coords').innerHTML =
-	"x1=" + coords [0] + "&" +
+    coords = "x1=" + coords [0] + "&" +
 	"y1=" + coords [1] + "&" +
 	"x2=" + coords [2] + "&" +
-	"y2=" + coords [3];   
-   
+	"y2=" + coords [3];
+    document.getElementById ('3d-coords').innerHTML = coords;
+	     
     //TODO : Charger les données du filtre puis afficher le filtre    
     $.ajax ({
-	url: location + "/pages/php/fillMenu.php?x1=" + coords [0] +
-	    "&y1=" + coords [1] +
-	    "&x2=" + coords [2] +
-	    "&y2=" + coords [3]
-	    
+	url: location + "/pages/php/fillMenu.php?x1=" + coords  
     }).done (function (data) {
-
 	data = $.parseJSON (data);
 
 	var list = document.getElementById ("masseList");
@@ -216,6 +211,7 @@ function setDisplay (coords) {
     });
     
     $('.subblockmenu').css('visibility', 'visible');
+  
     resize3dContent();
 }
 

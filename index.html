@@ -1,440 +1,520 @@
-<!DOCTYPE html>
-<!--
-This is a starter template page. Use this page to start your new project from
-scratch. This page gets rid of all links and provides the needed markup only.
--->
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Viz'O présentation</title>
-    <!-- Tell the browser to be responsive to screen width -->
-    <script src="js/jquery.js"></script>
-    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-    <!-- Bootstrap 3.3.6 -->
-    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="bootstrap/css/font-awesome.min.css">
-    <!-- Ionicons -->
-    <link rel="stylesheet" href="bootstrap/css/ionicons.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
+<!DOCTYPE html>
+<!--
+This is a starter template page. Use this page to start your new project from
+scratch. This page gets rid of all links and provides the needed markup only.
+-->
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Viz'O présentation</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <script src="js/jquery.js"></script>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.6 -->
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="bootstrap/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="bootstrap/css/ionicons.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="plugins/select2/select2.min.css">
+    <!-- iCheck -->
+    <link rel="stylesheet" href="plugins/iCheck/all.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="dist/css/AdminLTE.min.css">
+    <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
+          page. However, you can choose any other skin. Make sure you
+          apply the skin class to the body tag so the changes take effect.
+      -->
+    <link rel="stylesheet" href="bootstrap/ionslider/ion.rangeSlider.css">
+    <link rel="stylesheet" href="bootstrap/css/slider.css">
+    <link rel="stylesheet" href="dist/css/skins/skin-blue.min.css">
+    <link rel="stylesheet" href="https://openlayers.org/en/v3.10.1/css/ol.css" type="text/css">
+    <script src="https://openlayers.org/en/v3.10.1/build/ol.js"></script>
+
+    <style>
+        .skin-blue .sidebar-menu > li.header {
+            color: #ffffff;
+            font-weight: bold;
+            background: #3c8dbc;
+            /*border-left: solid 4px #fff;*/
+        }
+
+        .helpText {
+            color: #353535;
+            font-style: italic;
+            padding: 5px;
+            background-color: #99cbe8;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        .blockmenu {
+            margin-bottom: 10px;
+        }
+
+        .subblockmenu {
+            visibility: hidden;
+        }
+    </style>
+
+    <script>
+        var AdminLTEOptions = {
+            //Activate sidebar slimscroll if the fixed layout is set (requires SlimScroll Plugin)
+            sidebarSlimScroll: true,
+        }
+    </script>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<!--
+BODY TAG OPTIONS:
+=================
+Apply one or more of the following classes to get the
+desired effect
+|---------------------------------------------------------|
+| SKINS         | skin-blue                               |
+|               | skin-black                              |
+|               | skin-purple                             |
+|               | skin-yellow                             |
+|               | skin-red                                |
+|               | skin-green                              |
+|---------------------------------------------------------|
+|LAYOUT OPTIONS | fixed                                   |
+|               | layout-boxed                            |
+|               | layout-top-nav                          |
+|               | sidebar-collapse                        |
+|               | sidebar-mini                            |
+|---------------------------------------------------------|
+-->
+<body class="skin-blue fixed">
+    <div class="wrapper">
+        <!-- Main Header -->
+        <header class="main-header">
+            <!-- Logo -->
+            <a href="#" class="logo">
+                <!-- mini logo for sidebar mini 50x50 pixels -->
+                <span class="logo-mini"><b>Viz'</b>O</span>
+                <!-- logo for regular state and mobile devices -->
+                <span class="logo-lg"><b>Viz'</b>O</span>
+            </a>
+            <!-- Header Navbar -->
+            <nav class="navbar navbar-static-top" role="navigation" id="navbar">
+                <!-- Sidebar toggle button-->
+                <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
+                </a>
+                <!-- Navbar Right Menu -->
+                <div class="navbar-custom-menu">
+
+                </div>
+            </nav>
+        </header>
+        <!-- Left side column. contains the logo and sidebar -->
+        <aside class="main-sidebar" style="overflow:auto">
+            <!-- sidebar: style can be found in sidebar.less -->
+            <section class="sidebar">
+                <!-- Sidebar Menu -->
+
+
+                <div id="blockmenu-zoneetude" class="blockmenu">
+                    <ul class="sidebar-menu">
+                        <li class="header">Zone d'étude</li>
+                    </ul>
+                    <div class="helpText">Sélectionnez avec la carte l'emprise du secteur géographique à étudier</div>
+                    <form id="geoSearch" class="sidebar-form">
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control"
+                                   placeholder="Entrez un nom de lieu (Orléans, Beauce, Sologne...)" id="geoSearchValue">
+                            <span class="input-group-btn">
+                                <button type="submit" name="search"
+                                        id="search-btn" class="btn btn-flat">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </form>
+                    <div id="map-frame" style="height:230px" class="map"></div>
+                    <div style="padding:3px">
+                        <button id="map-ok" class="btn btn-block btn-success" type="button"><i class="fa fa-cube"></i> Sélectionner cette zone d'étude </button>
+                    </div>
+                </div>
+
+
+
+                <div id="blockmenu-masseeau" class="blockmenu subblockmenu">
+                    <ul class="sidebar-menu">
+                        <li class="header">Masses d'eau</li>
+                    </ul>
+                    <div class="helpText">Affichez/Masquez les masses d'eau sur la vue 3D</div>
+
+
+                    <div class="form-group" style="overflow:auto;max-height:100px;">
+                        <ul style="padding-left:5px" id="masseList">                           
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="blockmenu-molecule" class="blockmenu subblockmenu">
+                    <ul class="sidebar-menu">
+                        <li class="header">Molécule suivie</li>
+                    </ul>
+                    <div class="helpText" style="margin-bottom:0px">Sélectionnez la molécule à représenter sur la carte 3D</div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <select class="form-control select2" style="width: 100%;">
+                                    <option selected="selected">Pesticides totaux</option>
+                                    <option>Pesticide A</option>
+                                    <option>Pesticide B</option>
+                                    <option>Pesticide C</option>
+                                    <option>Pesticide D</option>
+                                    <option>Pesticide E</option>
+                                    <option>Pesticide F</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+		    
+		    <div id="blockmenu-validation" class="subblockmenu">
+                      <div style="padding:3px">
+			<button id="form-ok" class="btn btn-block
+				btn-success" type="button"><i class="fa
+							      fa-cube"></i> Valider la recherche </button>
+                      </div>
+		    </div>
+		    
+                </div>
+		
+                <!-- /.sidebar-menu -->
+            </section>
+            <!-- /.sidebar -->
+        </aside>
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper" style="background-color:#506073">
+
+            <!-- Main content -->
+            <section class="content" style="width: 100%;">
+
+                <div class="row">
+
+                    <div class="col-md-7">
+
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <i class="fa fa-cube"></i><h3 class="box-title">Visualisateur 3D</h3>
+                                <div class="box-tools pull-right">
+                                    <!--<button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>-->
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown">
+                                            <i class="fa fa-wrench"></i>
+                                        </button>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li><a href="#">Actualiser</a></li>
+                                            <li class="divider"></li>
+                                            <li><a href="#">Autre menu...</a></li>
+                                        </ul>
+                                    </div>
+                                    <!--<button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>-->
+                                </div>
+                            </div>
+                            <!-- /.box-header -->
+                            <div class="box-body">
+                                <div id="3d-content">
+                                    <img id="3d-texture"
+					 style="display: none;" />
+				     <div id="3d-coords"	style="display: none;"></div>
+                                    <div id="3d-frame" style="width: 100%;height:500px;border:solid 1px #f4f4f4">
+                                        <div style="margin: auto;max-width: 600px;padding: 10px 50px 50px 50px;background-color: #eee;text-align: center;margin-top: 50px;font-size: 15px;">
+                                            <div style="font-size:70px"><i class="fa fa-cube"></i></div>
+                                            Sélectionnez une zone géographique sur la carte dans la barre d'outils située à gauche de l'écran
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <!-- ./box-body -->
+                            <div class="box-footer">
+                                <div style="padding:0px 50px" id="rangeDiv">
+                                    <label>Année des données :</label>
+                                    <input id="range" type="text" value="" class="slider form-control"
+                                           data-slider-orientation="horizontal"
+                                           data-slider-ticks="[0, 1, 2, 3, 4]"
+                                           data-slider-ticks-labels='["2008", "2009", "2010", "2011", "2012"]'
+                                           data-slider-tooltip="hide" />
+                                </div>
+
+                            </div>
+                            <!-- /.box-footer -->
+                        </div>
+                        <!-- /.box -->
+
+                        <div class="box box-solid">
+                            <div class="box-header with-border">
+                                <i class="fa fa-book"></i>
+
+                                <h3 class="box-title">Informations sur l'application Viz'O</h3>
+                            </div>
+                            <!-- /.box-header -->
+                            <div class="box-body">
+                                <h1>Lorem ipsum dolor sit amet, consectetur adipiscing elit. </h1>
+
+                                <h2>Vivamus pulvinar ultrices faucibus.</h2>
+
+                                <p>
+                                    Cras vitae mauris sit amet est porta pharetra quis porttitor quam. Cras mattis viverra diam quis aliquet. Aliquam vel ultricies arcu. Integer malesuada nunc vitae arcu rutrum, ut interdum neque tincidunt. Mauris id diam ultrices, vehicula libero sit amet, ultricies urna. Mauris ac leo nec orci consequat mattis non quis sapien. Etiam commodo tortor ut risus efficitur malesuada.
+                                </p>
+
+                                <p>
+                                    In sit amet leo venenatis, porttitor dolor eu, rutrum ligula. Ut varius ante eros, nec condimentum lacus convallis vitae. Pellentesque aliquet ornare luctus. Donec sit amet euismod nibh, quis tempus tellus. Vivamus ante metus, semper id aliquet ac, convallis ac nisl. Suspendisse pulvinar et leo at tincidunt. Sed vitae vestibulum elit. Phasellus facilisis vulputate nisl, nec elementum urna porta pharetra. Quisque vel porta justo. Nullam sodales pharetra tincidunt. Maecenas eu neque purus.
+                                </p>
+                            </div>
+                            <!-- /.box-body -->
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-5">
+
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <i class="fa fa-flask"></i>
+                                <h3 class="box-title">Informations sur la molécule sélectionnée</h3>
+                                <div class="box-tools pull-right">
+                                    <!--<button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>-->
+                                    <div class="btn-group">
+                                    </div>
+                                    <!--<button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>-->
+                                </div>
+                            </div>
+                            <!-- /.box-header -->
+                            <div class="box-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="box-footer no-padding">
+                                            <ul class="nav nav-stacked">
+                                                <li><a href="#">Molécule <span class="pull-right badge bg-blue">Pesticides totaux</span></a></li>
+                                                <li><a href="#">Famille <span class="pull-right badge bg-blue">Lorem Ipsum</span></a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div id="chart_detection"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!-- ./box-body -->
+
+                        </div>
+
+
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <i class="fa fa-map-pin"></i>
+                                <h3 class="box-title">Informations sur le puit sélectionné</h3>
+                                <div class="box-tools pull-right">
+                                    <!--<button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>-->
+                                    <div class="btn-group">
+                                    </div>
+                                    <!--<button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>-->
+                                </div>
+                            </div>
+
+                            <!-- /.box-header -->
+                            <div class="box-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="box-footer no-padding">
+                                            <ul class="nav nav-stacked">
+                                                <li><a href="#">Code <span class="pull-right badge bg-blue">12345678X01234</span></a></li>
+                                                <li><a href="#">Masse d'eau <span class="pull-right badge bg-blue">F000001</span></a></li>
+                                                <li><a href="#">Indicateur <span class="pull-right badge bg-blue">X</span></a></li>
+                                                <li><a href="#">Indicateur <span class="pull-right badge bg-blue">Y</span></a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div id="chart_molecule"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!-- ./box-body -->
+                            <div class="box-footer">
+                                <label>
+                                    <input type="checkbox" class="minimal" checked> Afficher les métabolites sur le graphique
+                                </label>
+                            </div>
+                            <!-- /.box-footer -->
+                        </div>
+                        <!-- /.box -->
+                    </div>
+
+                    <!-- /.col -->
+                </div>
+
+
+
+
+            </section>
+            <!-- /.content -->
+        </div>
+        <!-- /.content-wrapper -->
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+            <!-- Create the tabs -->
+            <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+                <li class="active"><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
+                <li><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
+            </ul>
+        </aside>
+        <!-- /.control-sidebar -->
+        <!-- Add the sidebar's background. This div must be placed
+             immediately after the control sidebar -->
+        <div class="control-sidebar-bg"></div>
+    </div>
+    <!-- ./wrapper -->
+    <!-- REQUIRED JS SCRIPTS -->
+    <!-- Bootstrap slider -->
+    <script src="bootstrap/js/bootstrap-slider.js"></script>
+    <!-- Bootstrap 3.3.6 -->
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <!-- iCheck 1.0.1 -->
+    <script src="plugins/iCheck/icheck.min.js"></script>
+    <!-- Select2 -->
+    <script src="plugins/select2/select2.full.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="plugins/slimScroll/jquery.slimscroll.min.js"></script>
+    <script src="dist/js/app.min.js"></script>
+    <script src="js/home.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script>
 
-    <link rel="stylesheet" href="plugins/iCheck/all.css">
-
-    <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
-          page. However, you can choose any other skin. Make sure you
-          apply the skin class to the body tag so the changes take effect.
-      -->
-    <link rel="stylesheet" href="bootstrap/ionslider/ion.rangeSlider.css">
-    <link rel="stylesheet" href="bootstrap/css/slider.css">
-    <link rel="stylesheet" href="dist/css/skins/skin-blue.min.css">
-    <link rel="stylesheet" href="https://openlayers.org/en/v3.10.1/css/ol.css" type="text/css">
-    <script src="https://openlayers.org/en/v3.10.1/build/ol.js"></script>
-
-    <style>
-        .skin-blue .sidebar-menu > li.header {
-            color: #ffffff;
-            font-weight: bold;
-            background: #3c8dbc;
-            /*border-left: solid 4px #fff;*/
-        }
-
-        .helpText {
-            color: #353535;
-            font-style: italic;
-            padding: 5px;
-            background-color: #99cbe8;
-            margin-bottom: 15px;
-            font-size: 12px;
-        }
-
-        .blockmenu{
-            margin-bottom:10px
-        }
-        .subblockmenu{
-            visibility:hidden
-        }    
-
-	#sidebar {
-	float:left;
-	width:330px;
-	text-align:center;
-	height:100px;
-	background:#eee;
-	padding:150px 5px;
-	overflow: auto;
-	}
-	
-    </style>
-
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-</head>
-<!--
-BODY TAG OPTIONS:
-=================
-Apply one or more of the following classes to get the
-desired effect
-|---------------------------------------------------------|
-| SKINS         | skin-blue                               |
-|               | skin-black                              |
-|               | skin-purple                             |
-|               | skin-yellow                             |
-|               | skin-red                                |
-|               | skin-green                              |
-|---------------------------------------------------------|
-|LAYOUT OPTIONS | fixed                                   |
-|               | layout-boxed                            |
-|               | layout-top-nav                          |
-|               | sidebar-collapse                        |
-|               | sidebar-mini                            |
-|---------------------------------------------------------|
--->
-<body class="hold-transition skin-blue fixed">
-    <div class="wrapper">
-        <!-- Main Header -->
-        <header class="main-header">
-            <!-- Logo -->
-            <a href="#" class="logo">
-                <!-- mini logo for sidebar mini 50x50 pixels -->
-                <span class="logo-mini"><b>Viz'</b>O</span>
-                <!-- logo for regular state and mobile devices -->
-                <span class="logo-lg"><b>Viz'</b>O</span>
-            </a>
-            <!-- Header Navbar -->
-            <nav class="navbar navbar-static-top" role="navigation" id="navbar">
-                <!-- Sidebar toggle button-->
-                <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
-                    <span class="sr-only">Toggle navigation</span>
-                </a>
-                <!-- Navbar Right Menu -->
-                <div class="navbar-custom-menu">
-
-                </div>
-            </nav>
-        </header>
-	
-        <!-- Left side column. contains the logo and sidebar -->
-        <aside class="main-sidebar">
-
-            <!-- sidebar: style can be found in sidebar.less -->
-            <div class="sidebar slimScroll" >
-                <!-- Sidebar Menu -->
-
-                <div id="blockmenu-zoneetude" class="blockmenu">
-                    <ul class="sidebar-menu">
-                        <li class="header">Zone d'étude</li>
-                    </ul>
-                    <div class="helpText">Sélectionnez avec la carte l'emprise du secteur géographique à étudier</div>
-                    <form id="geoSearch" class="sidebar-form">
-                        <div class="input-group">
-                            <input type="text" name="q" class="form-control"
-                                   placeholder="Entrez un nom de lieu (Orléans, Beauce, Sologne...)" id="geoSearchValue">
-                            <span class="input-group-btn">
-                                <button type="submit" name="search"
-                                        id="search-btn" class="btn btn-flat">
-                                    <i class="fa fa-search"></i>
-                                </button>
-                            </span>
-                        </div>
-                    </form>
-                    <div id="map-frame" style="height:230px" class="map"></div>
-                    <div style="padding:3px">
-                        <button id="map-ok" class="btn btn-block btn-success" type="button"><i class="fa fa-cube"></i> Sélectionner cette zone d'étude </button>
-                    </div>
-                </div>
-
-
-
-                <div id="blockmenu-masseeau"  class="blockmenu subblockmenu">
-                    <ul class="sidebar-menu">
-                        <li class="header">Masses d'eau</li>
-                    </ul>
-                    <div class="helpText">Affichez/Masquez les masses d'eau sur la vue 3D</div>
-
-
-                    <div class="form-group" style="max-height:100px; overflow:auto;">
-                        <ul style="padding-left:5px" id="masseList">
-                            <li>
-                                <label style="color:#ddd">
-                                    <input type="checkbox" class="minimal" checked> Masse d'eau A
-                                </label>
-                            </li>
-                            <li>
-                                <label style="color:#ddd">
-                                    <input type="checkbox" class="minimal"> Masse d'eau B
-                                </label>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div id="blockmenu-molecule"  class="blockmenu subblockmenu">
-                    <ul class="sidebar-menu">
-                        <li class="header">Molécule suivie</li>
-                    </ul>
-                    <div class="helpText">Sélectionnez la molécule à représenter sur la carte 3D</div>
-                    <div class="form-group" style="max-height:100px; overflow:auto;">
-                        <ul style="padding-left:5px">
-                            <li>
-                                <label style="color:#ddd">
-                                    <input type="radio" name="molecule" class="minimal" checked> Pesticides totaux
-                                </label>
-                            </li>
-                            <li>
-                                <label style="color:#ddd">
-                                    <input type="radio" name="molecule" class="minimal"> Pesticide A
-                                </label>
-                            </li>
-                            <li>
-                                <label style="color:#ddd">
-                                    <input type="radio" name="molecule" class="minimal"> Pesticide B
-                                </label>
-                            </li>
-                            <li>
-                                <label style="color:#ddd">
-                                    <input type="radio" name="molecule" class="minimal"> Pesticide C
-                                </label>
-                            </li>
-                            <li>
-                                <label style="color:#ddd">
-                                    <input type="radio" name="molecule" class="minimal"> Pesticide D
-                                </label>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-		 <div id="blockmenu-validation" class="subblockmenu">
-                    <div style="padding:3px">
-                        <button id="form-ok" class="btn btn-block
-                        btn-success" type="button"><i class="fa
-                        fa-cube"></i> Valider la recherche </button>
-                    </div>
-                </div>
-
-
-                <!-- /.sidebar-menu -->
-            </div>
-
-            <!-- /.sidebar -->
-        </aside>
-        <!-- Content Wrapper. Contains page content -->
-        <div class="content-wrapper">
-
-            <!-- Main content -->
-            <section class="content" style="width: 100%;">
-
-                <div class="row">
-
-                    <div class="col-md-8">
-
-                        <div class="box">
-                            <div class="box-header with-border">
-                                <i class="fa fa-cube"></i><h3 class="box-title">Visualisateur 3D</h3>
-                                <div class="box-tools pull-right">
-                                    <!--<button type="button" class="btn btn-box-tool" data-widget="collapse">
-                                        <i class="fa fa-minus"></i>
-                                    </button>-->
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown">
-                                            <i class="fa fa-wrench"></i>
-                                        </button>
-                                        <ul class="dropdown-menu" role="menu">
-                                            <li><a href="#">Actualiser</a></li>
-                                            <li class="divider"></li>
-                                            <li><a href="#">Autre menu...</a></li>
-                                        </ul>
-                                    </div>
-                                    <!--<button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>-->
-                                </div>
-                            </div>
-                            <!-- /.box-header -->
-                            <div class="box-body">
-                                <div id="3d-content">
-                                    <img id="3d-texture" style="display: none;"/>
-				    <div id="3d-coords"	 style="display: none;"></div>
-				    <div id="3d-frame" style="width: 100%;height:500px;border:solid 1px #f4f4f4">
-                                      <div style="margin: auto;max-width: 600px;padding: 10px 50px 50px 50px;background-color: #eee;text-align: center;margin-top: 50px;font-size: 15px;">
-                                        <div style="font-size:70px"><i class="fa fa-cube"></i></div>
-                                            Sélectionnez une zone géographique sur la carte dans la barre d'outils située à gauche de l'écran
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                            <!-- ./box-body -->
-                            <div class="box-footer">
-                                <div style="padding:0px 50px">
-                                    <label>Année des données :</label>
-                                    <input id="range" type="text" value="" class="slider form-control"
-                                           data-slider-orientation="horizontal"
-                                           data-slider-ticks="[0, 1, 2, 3, 4, 5]"
-                                           data-slider-ticks-labels='["2007",
-                                    "2008", "2009", "2010", "2011", "2012"]'
-                                           data-slider-tooltip="hide" />
-                                </div>
-
-                            </div>
-                            <!-- /.box-footer -->
-                        </div>
-                        <!-- /.box -->
-                    </div>
-
-
-                    <div class="col-md-4">
-
-                        <div class="box">
-                            <div class="box-header with-border">
-                                <i class="fa fa-info-circle"></i>
-                                <h3 class="box-title">Informations sur la molécule sélectionnée</h3>
-                                <div class="box-tools pull-right">
-                                    <!--<button type="button" class="btn btn-box-tool" data-widget="collapse">
-                                        <i class="fa fa-minus"></i>
-                                    </button>-->
-                                    <div class="btn-group">
-                                    </div>
-                                    <!--<button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>-->
-                                </div>
-                            </div>
-                            <!-- /.box-header -->
-                            <div class="box-body">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="box-footer no-padding">
-                                            <ul class="nav nav-stacked">
-                                                <li><a href="#">Information 1 <span class="pull-right badge bg-blue">Valeur A</span></a></li>
-                                                <li><a href="#">Information 2 <span class="pull-right badge bg-aqua">5</span></a></li>
-                                                <li><a href="#">Information 3 <span class="pull-right badge bg-green">Valeur B</span></a></li>
-                                                <li><a href="#">Information 4 <span class="pull-right badge bg-red">457</span></a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-                                        <div id="chart_div"></div>
-                                    </div>
-                                </div>
-
-                            </div>
-                            <!-- ./box-body -->
-                            <div class="box-footer">
-                                <label>
-                                    <input type="checkbox" class="minimal" checked> Afficher les métabolites sur le graphique
-                                </label>
-                            </div>
-                            <!-- /.box-footer -->
-                        </div>
-                        <!-- /.box -->
-                    </div>
-
-                    <!-- /.col -->
-                </div>
-
-
-
-
-            </section>
-            <!-- /.content -->
-        </div>
-        <!-- /.content-wrapper -->
-        <!-- Control Sidebar -->
-        <aside class="control-sidebar control-sidebar-dark">
-            <!-- Create the tabs -->
-            <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
-                <li class="active"><a href="#control-sidebar-home-tab" data-toggle="tab"><i class="fa fa-home"></i></a></li>
-                <li><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
-            </ul>
-        </aside>
-        <!-- /.control-sidebar -->
-        <!-- Add the sidebar's background. This div must be placed
-             immediately after the control sidebar -->
-        <div class="control-sidebar-bg"></div>
-    </div>
-    <!-- ./wrapper -->
-    <!-- REQUIRED JS SCRIPTS -->
-    <!-- Bootstrap slider -->
-    <script src="bootstrap/js/bootstrap-slider.js"></script>
-    <!-- Bootstrap 3.3.6 -->
-    <script src="bootstrap/js/bootstrap.min.js"></script>
-    <!-- iCheck 1.0.1 -->
-    <script src="plugins/iCheck/icheck.min.js"></script>
-    <!-- AdminLTE App -->
-    <script src="dist/js/app.min.js"></script>
-    <script src="js/home.js"></script>
-    <script>
-        //Slider
-        $(function () {
-            /* BOOTSTRAP SLIDER */
-            $('.slider').slider();
-        });
-
-        //CheckBoxes & Radio
-        $('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
-            checkboxClass: 'icheckbox_flat-green',
-            radioClass: 'iradio_flat-green'
-        });
-
-        $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
-            checkboxClass: 'icheckbox_minimal-blue',
-            radioClass: 'iradio_minimal-blue'
-        });
-
-        // Google chart
-        google.charts.load('current', { packages: ['corechart', 'line'] });
-        google.charts.setOnLoadCallback(drawCurveTypes);
-
-        function drawCurveTypes() {
-            var data = new google.visualization.DataTable();
-            data.addColumn('number', 'X');
-            data.addColumn('number', 'Molécule A');
-            data.addColumn('number', 'Métabolite : Molécule X');
-
-            data.addRows([
-              [0, 0, 0], [1, 10, 5], [2, 23, 15], [3, 17, 9], [4, 18, 10], [5, 9, 5],
-              [6, 11, 3], [7, 27, 19], [8, 33, 25], [9, 40, 32], [10, 32, 24], [11, 35, 27],
-              [12, 30, 22], [13, 40, 32], [14, 42, 34], [15, 47, 39], [16, 44, 36], [17, 48, 40],
-              [18, 52, 44], [19, 54, 46], [20, 42, 34], [21, 55, 47], [22, 56, 48], [23, 57, 49],
-              [24, 60, 52], [25, 50, 42], [26, 52, 44], [27, 51, 43], [28, 49, 41], [29, 53, 45],
-              [30, 55, 47], [31, 60, 52], [32, 61, 53], [33, 59, 51], [34, 62, 54], [35, 65, 57],
-              [36, 62, 54], [37, 58, 50], [38, 55, 47], [39, 61, 53], [40, 64, 56], [41, 65, 57],
-              [42, 63, 55], [43, 66, 58], [44, 67, 59], [45, 69, 61], [46, 69, 61], [47, 70, 62],
-              [48, 72, 64], [49, 68, 60], [50, 66, 58], [51, 65, 57], [52, 67, 59], [53, 70, 62],
-              [54, 71, 63], [55, 72, 64], [56, 73, 65], [57, 75, 67], [58, 70, 62], [59, 68, 60],
-              [60, 64, 56], [61, 60, 52], [62, 65, 57], [63, 67, 59], [64, 68, 60], [65, 69, 61],
-              [66, 70, 62], [67, 72, 64], [68, 75, 67], [69, 80, 72]
-            ]);
-
-            var options = {
-                height: '400',
-                hAxis: {
-                    title: 'Années'
-                },
-                vAxis: {
-                    title: 'Concentration'
-                },
-                series: {
-                    1: { curveType: 'function' }
-                }
-            };
-
-            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-            chart.draw(data, options);
-        }
-
-    </script>
-    <!-- Optionally, you can add Slimscroll and FastClick plugins.
-         Both of these plugins are recommended to enhance the
-         user experience. Slimscroll is required when using the
-         fixed layout. -->
-</body>
-</html>
+      
+      function reloadStyle () {
+      $('.slider').slider();
+      
+      //Initialize Select2 Elements
+     // $(".select2").select2();
+      
+      //CheckBoxes & Radio
+      $('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
+      checkboxClass: 'icheckbox_flat-green',
+      radioClass: 'iradio_flat-green'
+      });
+      
+      $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
+      checkboxClass: 'icheckbox_minimal-blue',
+      radioClass: 'iradio_minimal-blue'
+      });
+      
+      }
+      
+        //Slider
+        $(reloadStyle);   
+
+
+
+        // Google chart
+        google.charts.load('current', { packages: ['corechart', 'line', 'bar'] });
+        google.charts.setOnLoadCallback(loadCharts);
+
+        function loadCharts() {
+            drawCurve();
+            drawBar();
+        }
+
+        function drawBar() {
+
+            var data = google.visualization.arrayToDataTable([
+              ['Molécule', 'Détection', ],
+              ['Molécule A', 15],
+              ['Molécule B', 10],
+              ['Molécule C', 8],
+              ['Molécule D', 8],
+              ['Molécule E', 3]
+            ]);
+
+            var options = {
+                title: 'Molécules les plus détectées',
+                chartArea: { width: '50%' },
+                hAxis: {
+                    title: 'Nombre de détections pour l\'année sélectionnée',
+                    minValue: 0
+                },
+                vAxis: {
+                    title: 'Molécules'
+                }
+            };
+
+            var chart = new google.visualization.BarChart(document.getElementById('chart_detection'));
+
+            chart.draw(data, options);
+        }
+
+        function drawCurve() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('number', 'X');
+            data.addColumn('number', 'Molécule A');
+            data.addColumn('number', 'Métabolite : Molécule X');
+
+            data.addRows([
+              [0, 0, 0], [1, 10, 5], [2, 23, 15], [3, 17, 9], [4, 18, 10], [5, 9, 5],
+              [6, 11, 3], [7, 27, 19], [8, 33, 25], [9, 40, 32], [10, 32, 24], [11, 35, 27],
+              [12, 30, 22], [13, 40, 32], [14, 42, 34], [15, 47, 39], [16, 44, 36], [17, 48, 40],
+              [18, 52, 44], [19, 54, 46], [20, 42, 34], [21, 55, 47], [22, 56, 48], [23, 57, 49],
+              [24, 60, 52], [25, 50, 42], [26, 52, 44], [27, 51, 43], [28, 49, 41], [29, 53, 45],
+              [30, 55, 47], [31, 60, 52], [32, 61, 53], [33, 59, 51], [34, 62, 54], [35, 65, 57],
+              [36, 62, 54], [37, 58, 50], [38, 55, 47], [39, 61, 53], [40, 64, 56], [41, 65, 57],
+              [42, 63, 55], [43, 66, 58], [44, 67, 59], [45, 69, 61], [46, 69, 61], [47, 70, 62],
+              [48, 72, 64], [49, 68, 60], [50, 66, 58], [51, 65, 57], [52, 67, 59], [53, 70, 62],
+              [54, 71, 63], [55, 72, 64], [56, 73, 65], [57, 75, 67], [58, 70, 62], [59, 68, 60],
+              [60, 64, 56], [61, 60, 52], [62, 65, 57], [63, 67, 59], [64, 68, 60], [65, 69, 61],
+              [66, 70, 62], [67, 72, 64], [68, 75, 67], [69, 80, 72]
+            ]);
+
+            var options = {
+                chartArea: { width: '50%' },
+                hAxis: {
+                    title: 'Années'
+                },
+                vAxis: {
+                    title: 'Concentration'
+                },
+                series: {
+                    1: { curveType: 'function' }
+                }
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('chart_molecule'));
+            chart.draw(data, options);
+        }
+
+    </script>
+    <!-- Optionally, you can add Slimscroll and FastClick plugins.
+         Both of these plugins are recommended to enhance the
+         user experience. Slimscroll is required when using the
+         fixed layout. -->
+</body>
+</html>
