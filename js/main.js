@@ -91,6 +91,7 @@ function init() {
 	    range.setAttribute ('data-slider-ticks-labels', '[' + years.toString () + ']');
 	    range.setAttribute ('data-slider-tooltip', 'hide');
 	    range.setAttribute ('type', 'text');
+	    range.setAttribute ('data-slider-selection', 'none');
 	    range.setAttribute ('id', 'range');
 	    var label = window.parent.document.createElement ('label');
 	    label.id = 'rangeText';
@@ -152,6 +153,7 @@ function formOk (callback) {
     $.ajax ({
 	url: location + "/php/criteres.php?" + coords + masse 
     }).done (function (data) {
+	console.log (data);
 	data = $.parseJSON (data);
 	callback (data);
     });    
@@ -634,7 +636,10 @@ function pick (event) {
 		var mat2 = new THREE.MeshBasicMaterial ({color : 0x00ff00, side : THREE.BackSide });
 		var clone = new THREE.Mesh (obj.geometry, mat2);
 		clone.position.set (obj.position.x, obj.position.y, obj.position.z);
-		clone.scale.set (1.5, 1., 1.5);
+		if (i == 0 || i == 2)
+		    clone.scale.set (1.5, 1.5, 1.5);		
+		else
+		    clone.scale.set (1.5, 1., 1.5);
 		highlits.push (clone);
 		scene.add (clone);
 	    }
@@ -647,7 +652,8 @@ function pick (event) {
 	    text.textContent = box.name;
 
 	    var label = new THREE.CSS2DObject (text);
-	    label.position.copy (box.position);	
+	    label.position.copy (box.position);
+	    label.position.y += 55;
 	    highlits.push (label);
 	    scene.add (label);
 

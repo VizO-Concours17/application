@@ -6,6 +6,10 @@ $pass = "root";
 $dbh = new PDO('mysql:host=localhost;dbname=vizo', $user, $pass);
 
 
+// TODO pesticide totaux moy, et max
+// Sur le label bot on met la valeur moyenne.
+
+
 $x1 = $_GET["x1"];
 $y1 = $_GET["y1"];
 $x2 = $_GET["x2"];
@@ -24,8 +28,8 @@ $requete = "SELECT * from CONC_PT2 where X_FICT_W84 >= " . $x1 . " and X_FICT_W8
 if (array_key_exists ('masse', $_GET)) {
     $requete .= ' and (';
     for ($i = 0; $i < count ($_GET['masse']); $i++) {
-	$requete .= 'CdMasseDEa = ' . "'" . $_GET['masse'][$i] . "'";
-	if ($i < count ($_GET['masse']) - 1) $requete .= ' or ';
+        $requete .= 'CdMasseDEa = ' . "'" . $_GET['masse'][$i] . "'";
+        if ($i < count ($_GET['masse']) - 1) $requete .= ' or ';
     }
     $requete .= ')';
 }
@@ -44,18 +48,20 @@ while ($donnee = $rep->fetch ()) {
     $x = ($donnee['X_FICT_W84'] - $center_x) / $dist_x * 2000 - 1;
     $y = ($center_y - $donnee['Y_FICT_W84']) / $dist_y * 2000 - 1;
 
+
+    // Taille sphere <- avec de classe de taille.
     
     if (!array_key_exists ($donnee['CD_STATION'], $point[$donnee['ANNEE']])) {
-	$point [ $donnee['ANNEE'] ] [$donnee ['CD_STATION']] = array ('x' => $x,
-								      'y' => $y,
-								      'z' => rand (0, 100),
-								      'depth' => rand (200, 300),
-								      'labelTop' => $donnee['CD_STATION'],
-								      'labelBot' => $donnee['LibelleLimite'] . " " . $donnee['MOYPTOT'],
-								      'sphereRadius' => ($donnee['MINMOLRECH'] + $donnee['MAXMOLRECH']) / 30,
-								      'sphereColor' => toColorClasse ($donnee['LibelleLimite'], $donnee['MAQMOLQ']),
-								      'lineWidth' => 6,
-								      'lineColor' => toColorClasse ($donnee['LibelleLimite'], $donnee['MAQMOLQ']));
+        $point [ $donnee['ANNEE'] ] [$donnee ['CD_STATION']] = array ('x' => $x,
+        'y' => $y,
+        'z' => rand (0, 100),
+        'depth' => rand (200, 300),
+        'labelTop' => $donnee['CD_STATION'],
+        'labelBot' => $donnee['LibelleLimite'] . " " . ($donnee['MINMOLQ']) . " " . $donnee['MINMOLRECH'] . " " . $donnee['MAQMOLQ']  . " " . $donnee['MAXMOLRECH'] . " " . ($donnee['MINMOLQ'] / $donnee['MINMOLRECH'] + $donnee['MAQMOLQ'] / $donnee['MAXMOLRECH']) / 2 * 100 ,
+        'sphereRadius' => toClasseMaxMolRech ($donnee ['MAXMOLRECH']),
+        'sphereColor' => toColorClasse ($donnee['LibelleLimite'], $donnee['MAQMOLQ']),
+        'lineWidth' => 3,
+        'lineColor' => toColorClasse ($donnee['LibelleLimite'], $donnee['MAQMOLQ']));
     }
     
 }
@@ -73,6 +79,40 @@ function toColorClasse ($cl, $qu) {
     if ($cl == 'Classe 2') return 0xF9a702 << 0;
     return 0x5e0000;        
 }
+
+
+function toClasseMaxMolRech ($cl) {
+    if ($cl < 20) return 6;
+    else if ($cl < 100) return 12;
+    else if ($cl < 200) return 15;
+    else if ($cl < 300) return 18;
+    else return 24;
+}
+
+// classe taille boule pour le total.
+// < 20 , < 100, < 200, < 300, 300 +
+
+
+// Recherche par moyenne sur totaux.
+
+// Min quantifie / min recherche -> 
+// Max qu / max rech ->
+// faire la moyenne
+
+// Recherche par max sur totaux.
+
+// On met juste les maxs.
+
+
+// Recherche par pesticide.
+// 1 - 2 - 3 - 4 - 4+
+// taille boule -> NbRecherche de la molecule
+// label bot -> concentration de la molecule, prct quantif
+
+// Dans le graphe sur le cote.
+
+// Pas de point si pas de puits.
+// Point à zero si pas de quantif
 
 
 ?>
