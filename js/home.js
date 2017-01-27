@@ -183,7 +183,7 @@ function setDisplay (coords) {
 	     
     //TODO : Charger les données du filtre puis afficher le filtre    
     $.ajax ({
-	url: location + "/pages/php/fillMenu.php?x1=" + coords  
+	url: location + "/pages/php/fillMenu.php?" + coords  
     }).done (function (data) {
 	data = $.parseJSON (data);
 

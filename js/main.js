@@ -8,8 +8,12 @@ var raycaster, labels;
 
 var meshPerYear, currentYear;
 var years;
+var aspect;
+
+var orScene, orCube, orCamera;
 
 var points;
+
 
 /**
    15h30 20 janvier
@@ -59,10 +63,10 @@ function init() {
 
     createBasicRender ();
     createPickingDatas ();
-
+    createOrientationRender ();
     
     computeViewMatrix ();
-    
+
     
     function arrangeDatas (datas) {
 	createDatas (datas);	
@@ -249,11 +253,12 @@ function cameraUpdate (event) {
 	    var posy = ancy - y;
 	    phi = (phi + Math.trunc (precise * posx)) % 360;
 	    teta = (teta - Math.trunc(precise * posy)) % 360;
-	    if (teta < 1) teta = 1;
-	    if (teta > 170) teta = 179;
+	    if (teta < 0) teta = 0;
+	    if (teta > 180) teta = 180;
 	}
 	
 	computeViewMatrix ();
+	computeViewMatrix (orCamera);
 	ancx = x;
 	ancy = y;	
     } else {
@@ -265,18 +270,21 @@ function cameraUpdate (event) {
 /**
    Calcule de la matrice de vue de la camera (coordonnées)
 */
-function computeViewMatrix () {
-    var pos = camera.position;
+function computeViewMatrix (cam) {
+    if (!cam) cam = camera;
+    var pos = cam.position;
     var radius = Math.abs (pos.distanceTo(target));
-    
     pos.x = target.x + radius * Math.sin (teta * Math.PI / 180.0) * Math.sin (phi * Math.PI / 180.0);
     pos.y = target.y + radius * Math.cos (teta * Math.PI / 180.0);
     pos.z = target.z + radius * Math.sin (teta * Math.PI / 180.0) * Math.cos (phi * Math.PI / 180.0);
     
-    camera.position = pos;
-    camera.lookAt (target);
-    camera.updateMatrixWorld (true);
+    cam.position.copy (pos);
+    cam.lookAt (target);
+    cam.updateProjectionMatrix ();
+    cam.updateMatrixWorld ();
 }
+
+
 
 /**
    Initialise le contexte, affiche la carte, la grille et genere la scene.
@@ -300,7 +308,11 @@ function createBasicRender () {
     
     target = new THREE.Vector3 (0, 0, 0);
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-    
+    aspect = window.innerWidth / window.innerHeight;
+    // camera = new THREE.OrthographicCamera (1000 *aspect / -2, 1000 *aspect/ 2,
+    // 					   1000 * aspect/ 2, 1000 *aspect/ -2,
+    // 					   -5000, 10000);
+
     camera.position.z = 1500;
     camera.position.y = -500;
     camera.lookAt (target);
@@ -341,17 +353,22 @@ function createBasicRender () {
     renderer.shadowMap.enabled = true;
     renderer.domElement.onmousemove = cameraUpdate;
     renderer.domElement.addEventListener ("mousemove", pick, false);
-
+    renderer.domElement.addEventListener ("mousemove", pickCube, false);
+    renderer.domElement.addEventListener ("click", pickCubeClick, false);
+    renderer.autoClear = false;
+    
     labelRenderer = new THREE.CSS2DRenderer ();
     labelRenderer.setSize (window.innerWidth, window.innerHeight);
     labelRenderer.domElement.style.position = 'absolute';
     labelRenderer.domElement.style.top = '0';
     labelRenderer.domElement.style.pointerEvents = 'none';    
+    labelRenderer.autoClear = false;
+
     
     document.body.appendChild( renderer.domElement );
     document.body.appendChild (labelRenderer.domElement);
     stats = new Stats();
-    document.body.appendChild( stats.dom );
+
     
     var pos = camera.position;
     var radius = Math.abs (pos.distanceTo(target));    
@@ -363,14 +380,20 @@ function createBasicRender () {
     };
 
     var distChange = function () {
+	
 	var radius = radiusController.Distance;
 	var pos = camera.position;
 	pos.x = target.x + radius * Math.sin (teta * Math.PI / 180.0) * Math.sin (phi * Math.PI / 180.0);
 	pos.y = target.y + radius * Math.cos (teta * Math.PI / 180.0);
 	pos.z = target.z + radius * Math.sin (teta * Math.PI / 180.0) * Math.cos (phi * Math.PI / 180.0);
 	
-	camera.position = pos;
-	camera.lookAt (target);	
+	camera.position.copy (pos);
+	camera.lookAt (target);
+	if (camera.isOrthographicCamera) {
+	    camera.zoom = 1000 / radius;
+	    camera.updateProjectionMatrix ();
+	} else camera.saveZoom = 1000 / radius;
+	camera.updateMatrixWorld ();
     }
 
     var transparence = (function () {
@@ -379,27 +402,221 @@ function createBasicRender () {
 
     gui.add (radiusController, "Distance", Math.ceil (10), Math.ceil (2.0 * radius), Math.ceil (radius / 100.0)).onChange (distChange);
     gui.add (radiusController, "Transparence", 0.0, 1.0, 0.01).onChange (transparence);
+
+    var mode = {};
+    mode.Perspective = true;
+    gui.add (mode, 'Perspective').onChange (function () {
+	console.log (camera.isOrthographicCamera);
+	if (camera.isOrthographicCamera) {
+	    var position = camera.position;
+	    var saveZoom = camera.zoom;
+	    camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+	    camera.position.copy (position);
+	    camera.saveZoom = saveZoom;
+	    camera.zoom = 1;
+	    camera.lookAt (target);
+	    computeViewMatrix (camera);
+	} else {
+	    var position = camera.position;
+	    var savedZoom = camera.saveZoom;
+	    camera = new THREE.OrthographicCamera (1000 *aspect / -2, 1000 *aspect/ 2,
+						   1000 / 2, 1000/ -2,
+						   -5000, 10000);
+	    camera.position.copy (position);
+	    camera.lookAt (target);
+	    if (savedZoom)
+		camera.zoom = savedZoom;
+	    computeViewMatrix (camera);
+	    camera.updateProjectionMatrix ();
+	}
+    });
     
 }
 
+
+function createOrientationRender () {
+    orScene = new THREE.Scene ();
+    orCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+    orCamera.position.z = 1500;
+    orCamera.position.y = -500;
+    orCamera.lookAt (new THREE.Vector3 (0, 0, 0));
+    computeViewMatrix (orCamera);
+
+    var haut = [new THREE.Vector2 (217 / 800, 209 / 600), new THREE.Vector2 (397 / 800, 209 / 600),
+		new THREE.Vector2 (397 / 800, 391/600),  new THREE.Vector2 (217 / 800, 391 / 600)];
+    
+    var bas = [new THREE.Vector2 (758 / 800, 391/600), new THREE.Vector2 (579 / 800, 391 / 600),
+	       new THREE.Vector2 (579 / 800, 209 / 600), new THREE.Vector2 (758 / 800, 209 / 600)];
+    
+    var est = [new THREE.Vector2 (397 / 800, 392 / 600), new THREE.Vector2 (397 / 800, 570/600),
+	       new THREE.Vector2 (217 / 800, 570 / 600), new THREE.Vector2 (217 / 800, 391 / 600)];
+    
+    var ouest = [ new THREE.Vector2 (217 / 800, 209 / 600), new THREE.Vector2 (217 / 800, 27 / 600),
+		 new THREE.Vector2 (397 / 800, 28 / 600), new THREE.Vector2 (397 / 800, 209 / 600)];
+    
+    var sud = [new THREE.Vector2 (397 / 800, 209 / 600), new THREE.Vector2 (579 / 800, 209 / 600),
+	       new THREE.Vector2 (579 / 800, 391 / 600), new THREE.Vector2 (397 / 800, 391 / 600)];
+    
+    var nord = [new THREE.Vector2 (217 / 800, 391 / 600), new THREE.Vector2 (37 / 800, 391 / 600),
+		new THREE.Vector2 (37 / 800, 209 / 600), new THREE.Vector2 (217 / 800, 209 / 600)];
+    
+    var geometry = new THREE.CubeGeometry (1000, 1000, 1000, 1, 1, 1);
+    geometry.faceVertexUvs[0] = [];
+    geometry.faceVertexUvs[0][0] = [ est[0], est[1], est[3] ];
+    geometry.faceVertexUvs[0][1] = [ est[1], est[2], est[3] ];
+    
+    geometry.faceVertexUvs[0][2] = [ ouest[0], ouest[1], ouest[3] ];
+    geometry.faceVertexUvs[0][3] = [ ouest [1], ouest[2], ouest[3] ];
+    
+    geometry.faceVertexUvs[0][4] = [ haut[0], haut[1], haut[3] ];
+    geometry.faceVertexUvs[0][5] = [ haut[1], haut[2], haut[3] ];
+    
+    geometry.faceVertexUvs[0][6] = [ bas[0], bas[1], bas[3] ];
+    geometry.faceVertexUvs[0][7] = [ bas[1], bas[2], bas[3] ];
+    
+    geometry.faceVertexUvs[0][8] = [ sud[0], sud[1], sud[3] ];
+    geometry.faceVertexUvs[0][9] = [ sud[1], sud[2], sud[3] ];
+    
+    geometry.faceVertexUvs[0][10] = [ nord[0], nord[1], nord[3] ];
+    geometry.faceVertexUvs[0][11] = [ nord[1], nord[2], nord[3] ];
+    
+    var loader = new THREE.TextureLoader ();
+    loader.load ('texture/cube/orientation.jpg',
+		 function (texture) {
+		     var mat = new THREE.MeshBasicMaterial( { map: texture} );
+		     orCube = new THREE.Mesh (geometry, mat);
+		     orScene.add (orCube);    
+		 });
+        
+    orScene.add( new THREE.AmbientLight( 0x101010 ) );
+}
 
 function createPickingDatas () {
     raycaster = new THREE.Raycaster ();
 }
 
 
-var highlits = [];
+var highlits = [], cubeHighlits = [];
 
 function addToolTip () {
     
 }
+
+function pickCube (event) {
+    var x = (event.clientX / (window.innerWidth)) * 10 - 1;
+    var y = - (event.clientY / (window.innerHeight)) * 10 + 1;
+    var mouse = new THREE.Vector2 (x, y);
+    raycaster.setFromCamera (mouse, orCamera);
+    var intersects = raycaster.intersectObjects ([orCube]);
+    if (intersects.length > 0) {
+	if (cubeHighlits){
+	    for (var i = 0; i < cubeHighlits.length; i++) {
+		orScene.remove (cubeHighlits [i]);
+	    }
+	    cubeHighlits = [];
+	}
+	
+	var plane = new THREE.PlaneGeometry (1100, 1100);
+	var mat = new THREE.MeshBasicMaterial ({color : 0x00ff00, side : THREE.DoubleSide });
+		
+	var face = intersects [0].faceIndex;
+	var position = new THREE.Vector3 (0,0,0);
+	if (face == 0 || face == 1) {
+	    plane.rotateY (- Math.PI / 2);
+	    position.x = 498;
+	} else if (face == 2 || face == 3) {
+	    plane.rotateY (Math.PI / 2);//moveOuest ();
+	    position.x = -498;
+	} else if (face == 4 || face == 5) {
+	    plane.rotateX (Math.PI / 2);// moveBas ();
+	    position.y = 498;
+	} else if (face == 6 || face == 7) {
+ 	    plane.rotateX (Math.PI / 2);// moveBas ();
+	    plane.rotateZ (-Math.PI);// moveBas ();
+	    position.y = -498;
+	} else if (face == 8 || face == 9) {
+ 	    plane.rotateZ (-Math.PI / 2);
+	    plane.rotateX (Math.PI);// moveSud ();
+	    position.z = 498;
+	} else if (face == 10 || face == 11) {
+ 	    plane.rotateZ (Math.PI / 2);// moveNord ();
+	    position.z = -498;
+	}
+	var mesh = new THREE.Mesh (plane, mat);
+	mesh.position.copy (position);
+	orScene.add (mesh);
+	cubeHighlits.push (mesh);
+    } else {
+	console.log (cubeHighlits);
+	if (cubeHighlits){
+	    for (var i = 0; i < cubeHighlits.length; i++) {
+		orScene.remove (cubeHighlits [i]);
+	    }
+	    cubeHighlits = [];
+	}
+    }
+}
+
+function pickCubeClick (event) {
+    var x = (event.clientX / (window.innerWidth)) * 10 - 1;
+    var y = - (event.clientY / (window.innerHeight)) * 10 + 1;
+    var mouse = new THREE.Vector2 (x, y);
+    raycaster.setFromCamera (mouse, orCamera);
+    var intersects = raycaster.intersectObjects ([orCube]);
+    if (intersects.length > 0) {
+	var face = intersects [0].faceIndex;
+	if (face == 0 || face == 1) moveEst ();
+	else if (face == 2 || face == 3) moveOuest ();
+	else if (face == 4 || face == 5) moveHaut ();
+	else if (face == 6 || face == 7) moveBas ();
+	else if (face == 8 || face == 9) moveSud ();
+	else if (face == 10 || face == 11) moveNord ();	
+    }    
+}
+
+function moveEst () {
+    phi = 90; teta = 90;
+    computeViewMatrix (camera);
+    computeViewMatrix (orCamera);
+}
+
+function moveOuest () {
+    phi = -90; teta = 90;
+    computeViewMatrix (camera);
+    computeViewMatrix (orCamera);
+}
+
+function moveSud () {
+    phi = 0; teta = 90;
+    computeViewMatrix (camera);
+    computeViewMatrix (orCamera);
+}
+
+function moveNord () {
+    phi = 180; teta = 90;
+    computeViewMatrix (camera);
+    computeViewMatrix (orCamera);    
+}
+
+function moveHaut () {
+    phi = 0; teta = 0;
+    computeViewMatrix (camera);
+    computeViewMatrix (orCamera);    
+}
+
+function moveBas () {
+    phi = 0; teta = 180;
+    computeViewMatrix (camera);
+    computeViewMatrix (orCamera);    
+}
+
 
 function pick (event) {
     var x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
     var y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
     var mouse = new THREE.Vector2 (x, y);
     raycaster.setFromCamera (mouse, camera);
-    if (meshPerYear.length > currentYear) {
+    if (meshPerYear && meshPerYear.length > currentYear) {
 	var intersects = raycaster.intersectObjects (meshPerYear [currentYear]);
 	if (intersects.length > 0) {
 	    
@@ -480,6 +697,16 @@ function onPick (event) {
 function animate() {
     requestAnimationFrame( animate );       
     labelRenderer.render ( scene, camera );
+
+    renderer.clear ();
+    
+    var w = window.innerWidth, h = window.innerHeight;
+    renderer.setViewport (0, 0, w, h);   
     renderer.render( scene, camera );
-    stats.update();    
+    renderer.clearDepth ();
+    
+    renderer.setViewport (0, h - 10 - h / 5, w / 5, h / 5);   
+    renderer.render (orScene, orCamera);
+
+    
 }
