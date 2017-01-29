@@ -163,14 +163,15 @@ desired effect
 
                 <div id="blockmenu-molecule" class="blockmenu subblockmenu">
                     <ul class="sidebar-menu">
-                        <li class="header">Molécule suivie</li>
+                        <li class="header">Données pesticides</li>
                     </ul>
                     <div class="helpText" style="margin-bottom:0px">Sélectionnez la molécule à représenter sur la carte 3D</div>
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
                                 <select class="form-control select2" style="width: 100%;">
-                                    <option selected="selected">Pesticides totaux</option>
+                                  <option selected="selected">Pesticides totaux - concentration moyenne</option>
+				  <option selected="selected">Pesticides totaux - concentration maximale</option>
                                     <option>Pesticide A</option>
                                     <option>Pesticide B</option>
                                     <option>Pesticide C</option>
@@ -213,16 +214,6 @@ desired effect
                                     <!--<button type="button" class="btn btn-box-tool" data-widget="collapse">
                                         <i class="fa fa-minus"></i>
                                     </button>-->
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-box-tool dropdown-toggle" data-toggle="dropdown">
-                                            <i class="fa fa-wrench"></i>
-                                        </button>
-                                        <ul class="dropdown-menu" role="menu">
-                                            <li><a href="#">Actualiser</a></li>
-                                            <li class="divider"></li>
-                                            <li><a href="#">Autre menu...</a></li>
-                                        </ul>
-                                    </div>
                                     <!--<button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>-->
                                 </div>
                             </div>
@@ -337,7 +328,7 @@ desired effect
                                     <div class="col-md-12">
                                         <div class="box-footer no-padding">
                                             <ul class="nav nav-stacked">
-                                                <li><a href="#">Code <span class="pull-right badge bg-blue">12345678X01234</span></a></li>
+                                                <li><a href="#">Code Station <span class="pull-right badge bg-blue">12345678X01234</span></a></li>
                                                 <li><a href="#">Masse d'eau <span class="pull-right badge bg-blue">F000001</span></a></li>
                                                 <li><a href="#">Indicateur <span class="pull-right badge bg-blue">X</span></a></li>
                                                 <li><a href="#">Indicateur <span class="pull-right badge bg-blue">Y</span></a></li>
@@ -442,7 +433,7 @@ desired effect
         function drawBar() {
 
             var data = google.visualization.arrayToDataTable([
-              ['Molécule', 'Détection', ],
+              ['Molécule', 'Quantification', ],
               ['Molécule A', 15],
               ['Molécule B', 10],
               ['Molécule C', 8],
@@ -451,7 +442,7 @@ desired effect
             ]);
 
             var options = {
-                title: 'Molécules les plus détectées',
+                title: 'Molécules les plus souvent quantifiées',
                 chartArea: { width: '50%' },
                 hAxis: {
                     title: 'Nombre de détections pour l\'année sélectionnée',
