@@ -169,15 +169,7 @@ desired effect
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <select class="form-control select2" style="width: 100%;">
-                                  <option selected="selected">Pesticides totaux - concentration moyenne</option>
-				  <option selected="selected">Pesticides totaux - concentration maximale</option>
-                                    <option>Pesticide A</option>
-                                    <option>Pesticide B</option>
-                                    <option>Pesticide C</option>
-                                    <option>Pesticide D</option>
-                                    <option>Pesticide E</option>
-                                    <option>Pesticide F</option>
+                                <select id="pestList" class="form-control select2" style="width: 100%;">
                                 </select>
                             </div>
                         </div>
@@ -273,7 +265,7 @@ desired effect
                         <div class="box">
                             <div class="box-header with-border">
                                 <i class="fa fa-flask"></i>
-                                <h3 class="box-title">Informations sur la molécule sélectionnée</h3>
+                                <h3 class="box-title" id="titreMol"></h3>
                                 <div class="box-tools pull-right">
                                     <!--<button type="button" class="btn btn-box-tool" data-widget="collapse">
                                         <i class="fa fa-minus"></i>
@@ -287,15 +279,11 @@ desired effect
                             <div class="box-body">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="box-footer no-padding">
-                                            <ul class="nav nav-stacked">
-                                                <li><a href="#">Molécule <span class="pull-right badge bg-blue">Pesticides totaux</span></a></li>
-                                                <li><a href="#">Famille <span class="pull-right badge bg-blue">Lorem Ipsum</span></a></li>
-                                            </ul>
-                                        </div>
+                                      <div class="box-footer no-padding">
+                                        <ul class="nav nav-stacked" id="infoMolList"></ul>
+                                      </div>
                                     </div>
-                                </div>
-
+                                </div>				
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div id="chart_detection"></div>
@@ -427,36 +415,9 @@ desired effect
 
         function loadCharts() {
             drawCurve();
-            drawBar();
         }
 
-        function drawBar() {
-
-            var data = google.visualization.arrayToDataTable([
-              ['Molécule', 'Quantification', ],
-              ['Molécule A', 15],
-              ['Molécule B', 10],
-              ['Molécule C', 8],
-              ['Molécule D', 8],
-              ['Molécule E', 3]
-            ]);
-
-            var options = {
-                title: 'Molécules les plus souvent quantifiées',
-                chartArea: { width: '50%' },
-                hAxis: {
-                    title: 'Nombre de détections pour l\'année sélectionnée',
-                    minValue: 0
-                },
-                vAxis: {
-                    title: 'Molécules'
-                }
-            };
-
-            var chart = new google.visualization.BarChart(document.getElementById('chart_detection'));
-
-            chart.draw(data, options);
-        }
+
 
         function drawCurve() {
             var data = new google.visualization.DataTable();

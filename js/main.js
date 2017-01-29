@@ -104,6 +104,7 @@ function init() {
 	}
 	window.parent.reloadStyle ();
 	$('#rangeText', window.parent.document).text ("Ann\351e des donn\351es");
+	
     };
 
     fillPoints (arrangeDatas);
@@ -139,7 +140,7 @@ function formOk (callback) {
     
     var location = window.location.href;
     location = location.substr (0, location.lastIndexOf ('/'));
-    console.log (location);
+
     var coords = window.parent.document.getElementById ('3d-coords').innerHTML.replace (/&amp;/g, '&');
     var masse = "";
     var list = window.parent.document.getElementById ('masseList');
@@ -149,14 +150,24 @@ function formOk (callback) {
 	    masse += "&masse[]=" + list.children [ch].children [0].getAttribute ('name');	    
 	}
     }
-    
+
+    var plist = window.parent.document.getElementById ('pestList');
+    console.log (location + "/php/criteres.php?" + coords + masse + "&pest=" + plist.value);
     $.ajax ({
-	url: location + "/php/criteres.php?" + coords + masse 
+	url: location + "/php/criteres.php?" + coords + masse + "&pest=" + parseInt (plist.value)
     }).done (function (data) {
-	console.log (data);
 	data = $.parseJSON (data);
 	callback (data);
     });    
+
+    if (plist.value == -1 || plist.value == -2) {
+	$.ajax ({
+	    url: location + "/php/mores.php?" + coords + masse 
+	}).done (function (data) {
+	    data = $.parseJSON (data);
+	    generateGraph (data['more']);
+	});
+    }
     
 }
 
@@ -169,13 +180,21 @@ function fillPoints (callback) {
     var location = window.location.href;
     location = location.substr (0, location.lastIndexOf ('/'));
     var coords = window.parent.document.getElementById ('3d-coords').innerHTML.replace (/&amp;/g, '&');
-    console.log (coords);
+
     $.ajax ({
-	url: location + "/php/criteres.php?" + coords 
+	url: location + "/php/criteres.php?" + coords + "&pest=-1"
     }).done (function (data) {
 	data = $.parseJSON (data);
 	callback (data);
-    });    
+    });
+
+    $.ajax ({
+	url: location + "/php/mores.php?" + coords
+    }).done (function (data) {
+	data = $.parseJSON (data);
+	generateGraph (data['more']);
+    });
+    
 }
 
 /**
@@ -185,6 +204,7 @@ function createDatas (datas) {
     meshPerYear = [];
     years = [];
     for (var key in datas) {
+	if (key == "more" || key == "pestInfo") continue;
 	years.push ('"' + key + '"');
 	var total = [];
 	var i = 0;
@@ -296,18 +316,9 @@ function createBasicRender () {
 
     labels = new THREE.Scene ();
     
-    scene.add( new THREE.AmbientLight( 0x101010 ) );
+    scene.add( new THREE.AmbientLight( 0xA0A0A0 ) );
     
-    var light = new THREE.SpotLight( 0xffffff, 1.5 );
-    light.position.set( 0, 1000, 200 );
-    light.castShadow = true;    
-    light.shadow = new THREE.LightShadow( new THREE.PerspectiveCamera( 70, 1, 200, 2000 ) );
-    light.shadow.bias = - 0.00022;
-    light.shadow.mapSize.width = 2048;
-    light.shadow.mapSize.height = 2048;
-
-    scene.add (light);
-    
+  
     target = new THREE.Vector3 (0, 0, 0);
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
     aspect = window.innerWidth / window.innerHeight;
@@ -319,6 +330,12 @@ function createBasicRender () {
     camera.position.y = -500;
     camera.lookAt (target);
 
+    var light1 = new THREE.PointLight( 0xffffff, 1.5 );
+    light1.position.set( 0, 1000, 0 );
+
+    scene.add (light1);
+    
+    
     var planeGeometry = new THREE.PlaneGeometry( 2000, 2000 );
     planeGeometry.rotateX( - Math.PI / 2 );
     var planeMaterial = new THREE.ShadowMaterial();
@@ -549,7 +566,6 @@ function pickCube (event) {
 	orScene.add (mesh);
 	cubeHighlits.push (mesh);
     } else {
-	console.log (cubeHighlits);
 	if (cubeHighlits){
 	    for (var i = 0; i < cubeHighlits.length; i++) {
 		orScene.remove (cubeHighlits [i]);
@@ -653,7 +669,7 @@ function pick (event) {
 
 	    var label = new THREE.CSS2DObject (text);
 	    label.position.copy (box.position);
-	    label.position.y += 55;
+	    //label.position.y += 5;
 	    highlits.push (label);
 	    scene.add (label);
 
@@ -712,7 +728,39 @@ function animate() {
     renderer.clearDepth ();
     
     renderer.setViewport (0, h - 10 - h / 5, w / 5, h / 5);   
-    renderer.render (orScene, orCamera);
-
-    
+    renderer.render (orScene, orCamera);    
 }
+
+
+function generateGraph (datas) {
+    if (datas.length != 0) {
+		
+	google.charts.load('current', { packages: ['corechart', 'line', 'bar'] });
+	google.charts.setOnLoadCallback(function () {	
+	    quantif = [['Mol\351cule', 'Quantification', ]];
+	    for (var i in datas) {
+		quantif.push([datas[i]['lb'], parseInt (datas[i]['quantif'])] );
+	    }
+	    
+	    var options = {
+		title: 'Mol\351cules les plus souvent quantifi\351es',
+		chartArea: { width: '50%' },
+		hAxis: {
+		    title: 'Nombre de quantifications totale',
+		    minValue: 0
+		},
+		vAxis: {
+		    title: 'Mol\351cules'
+		}
+	    };
+	    var data = new google.visualization.arrayToDataTable (quantif);
+	    $('#chart_detection', window.parent.document).css('visibility', 'visible');
+	    var chart = new google.visualization.BarChart (window.parent.document.getElementById ('chart_detection'));
+	    chart.draw (data, options);
+	    var titre = window.parent.document.getElementById ('titreMol');
+	    titre.innerHTML = "Nombre de quantification de la zone de recherche";
+	});
+    }
+          
+}
+

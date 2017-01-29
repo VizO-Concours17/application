@@ -166,6 +166,15 @@ function addMasse (name) {
     list.appendChild (li);
 }
 
+function addPest (name) {
+    var list = document.getElementById ('pestList');
+    var option = document.createElement ('option');
+    option.innerHTML = name['lb'];
+    option.setAttribute ('value', name['cd'].substr (1, name['cd'].length - 2));
+    list.appendChild (option);
+}
+
+
 /**
    On affiche le rendu 3d.
    Met a jour les événements
@@ -188,12 +197,31 @@ function setDisplay (coords) {
 	data = $.parseJSON (data);
 
 	var list = document.getElementById ("masseList");
+	var plist = document.getElementById ("pestList");
 	
 	for (i = 0; i < list.children.length;)
 	    list.removeChild (list.children [i]);
+	
+	while (plist.children.length > 0)
+	    plist.removeChild (plist.children [0]);
+
+	var opt1 = document.createElement ('option');
+	opt1.setAttribute ('value', '-1');
+	opt1.innerHTML = 'Pesticides totaux - concentration maximale';
+	plist.appendChild (opt1);
+
+	var opt2 = document.createElement ('option');
+	opt2.setAttribute ('value', '-2');
+	opt2.innerHTML = 'Pesticides totaux - concentration moyenne';
+	plist.appendChild (opt2);
+	
 	console.log (data);
 	for (i = 0; i < data["masse"].length ; i++) {
 	    addMasse (data['masse'] [i]);
+	}
+
+	for (i = 0; i < data["pest"].length; i++) {
+	    addPest (data["pest"][i]);
 	}
 	
         //CheckBoxes & Radio
