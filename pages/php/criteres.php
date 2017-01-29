@@ -70,7 +70,7 @@ function getFromTotal () {
 									  'sphereRadius' => toClasseMaxMolRech ($donnee ['MAXMOLRECH']),
 									  'sphereColor' => ($pest == -1 ? toColorClasse ($donnee['MAXPTOT'], $donnee['MAQMOLQ']) : toColorClasse ($donnee['MOYPTOT'], $donnee['MAQMOLQ']) ),
 									  'lineWidth' => 3,
-									  'lineColor' => bin2hex ($donnee['CdMasseDEa']));
+									  'lineColor' => masseColor ($donnee['CdMasseDEa']));
 	}
 	
     }
@@ -116,7 +116,7 @@ function getFromPest () {
 									  'sphereRadius' => toClasseMolRech ($donnee ['NBANASPERTS1']),
 									  'sphereColor' => (toColorClasse ($donnee['MA_MOY'], $donnee['NBQUANTIF'])),
 									  'lineWidth' => 3,
-									  'lineColor' => bin2hex ($donnee['CdMasseDEa']));
+									  'lineColor' => masseColor ($donnee['CdMasseDEa']));
 	}
     }
 
@@ -153,6 +153,24 @@ function toClasseMolRech ($cl) {
     else if ($cl < 4) return 18;
     else return 24;
 }
+
+$colors = array ();
+
+function masseColor ($name) {
+    global $colors;
+    if ($colors && array_key_exists ($name, $colors)) {
+	return $colors [$name];
+    } else {
+	$r = rand (0x000000, 0xFFFFFF);
+	$colors [$name] = $r;
+	return $r;
+    }    
+}
+
+function newColor () {
+    return rand (0x000000, 0xFFFFFF);
+}
+
 
 
 // classe taille boule pour le total.

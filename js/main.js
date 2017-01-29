@@ -162,10 +162,20 @@ function formOk (callback) {
 
     if (plist.value == -1 || plist.value == -2) {
 	$.ajax ({
-	    url: location + "/php/mores.php?" + coords + masse 
+	    url: location + "/php/mores.php?" + coords
 	}).done (function (data) {
 	    data = $.parseJSON (data);
 	    generateGraph (data['more']);
+	});
+    } else {
+	$.ajax ({
+	    url: location + "/php/pest.php?pest=" + plist.value
+	}).done (function (data) {
+	    console.log (location + "/php/pest.php?pest=" + plist.value);
+	    console.log (data);
+	    data = $.parseJSON (data);
+	    console.log (data);
+	    generatePest (data);
 	});
     }
     
@@ -731,6 +741,84 @@ function animate() {
     renderer.render (orScene, orCamera);    
 }
 
+function generatePest (datas) {
+    $('#boxMol', window.parent.document).css('visibility', 'visible');
+    $('#chart_detection', window.parent.document).css('visibility', 'hidden');
+    var mol = window.parent.document.getElementById ('infoMolList');
+    while (mol.children.length > 0)
+	mol.removeChild (mol.children [0]);
+    
+    var li = document.createElement ('li');
+    var span = document.createElement ('span');
+    span.className = "pull-right badge bg-blue";
+    li.innerHTML = 'Nom';
+    span.innerHTML = datas['nom'];
+    li.appendChild (span);
+    mol.appendChild (li);
+
+    var li2 = document.createElement ('li');
+    var span2 = document.createElement ('span');
+    span2.className = "pull-right badge bg-blue";
+    li2.innerHTML = 'Famille';
+    span2.innerHTML = datas['famille'].replace ('é', '\351');
+    li2.appendChild (span2);
+    mol.appendChild (li2);
+    
+    var li3 = document.createElement ('li');
+    var span3 = document.createElement ('span');
+    span3.className = "pull-right badge bg-blue";
+    li3.innerHTML = 'Usage';
+    span3.innerHTML = datas['fonction'];
+    li3.appendChild (span3);
+    mol.appendChild (li3);
+
+    var li4 = document.createElement ('li');
+    var span4 = document.createElement ('span');
+    if (datas['statut']) {
+	span4.className = "pull-right badge bg-green";
+	span4.innerHTML = "oui";
+    } else {
+	span4.className = "pull-right badge bg-red";
+	span4.innerHTML = "non";
+    }
+    
+    li4.innerHTML = 'Autoris\351';
+    li4.appendChild (span4);
+    mol.appendChild (li4);
+
+    if (!datas['statut'] && datas['date'] != "") {
+	var li5 = document.createElement ('li');
+	var span5 = document.createElement ('span');
+	span5.className = "pull-right badge bg-blue";
+	li5.innerHTML = "Date d'interdiction";
+	span5.innerHTML = datas['date'];
+	li5.appendChild (span5);
+	mol.appendChild (li5);	
+    }
+
+    var li6 = document.createElement ('li');
+    var span6 = document.createElement ('span');
+    span6.className = "pull-right badge bg-blue";
+    li6.innerHTML = 'Norme DCE';
+    span6.innerHTML = datas['normeDce'];
+    li6.appendChild (span6);
+    mol.appendChild (li6);        
+
+    if (datas['meta']) {	
+	var li7 = document.createElement ('li');
+	var span7 = document.createElement ('span');
+	span7.className = "pull-right badge bg-blue";
+	li7.innerHTML = 'Mol\351cule parent';
+	span7.innerHTML = datas['parent_nom'];
+	li7.appendChild (span7);
+	mol.appendChild (li7);
+    }
+    
+    var titre = window.parent.document.getElementById ('titreMol');
+    titre.innerHTML = "Information sur la mol\351cule recherch\351";
+   
+}
+
 
 function generateGraph (datas) {
     if (datas.length != 0) {
@@ -753,8 +841,13 @@ function generateGraph (datas) {
 		    title: 'Mol\351cules'
 		}
 	    };
+	    var mol = window.parent.document.getElementById ('infoMolList');
+	    while (mol.children.length > 0)
+		mol.removeChild (mol.children [0]);
+	    
 	    var data = new google.visualization.arrayToDataTable (quantif);
 	    $('#chart_detection', window.parent.document).css('visibility', 'visible');
+	    $('#boxMol', window.parent.document).css('visibility', 'visible');
 	    var chart = new google.visualization.BarChart (window.parent.document.getElementById ('chart_detection'));
 	    chart.draw (data, options);
 	    var titre = window.parent.document.getElementById ('titreMol');
