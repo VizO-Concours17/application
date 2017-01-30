@@ -71,7 +71,6 @@ function init() {
 
     
     function arrangeDatas (datas) {
-	donnee = datas;
 	createDatas (datas);	
 	currentYear = meshPerYear.length - 1;
 	
@@ -163,21 +162,28 @@ function formOk (callback) {
 	callback (data);
     });    
 
+    $("#info_pestMore", window.parent.document).css ('visibility', 'visible');
+    var info = window.parent.document.getElementById ('info_pestMore');
+    info.innerHTML = "Chargement des informations des mol\351cules les plus quantifi\351es";
     if (plist.value == -1 || plist.value == -2) {
 	$.ajax ({
 	    url: location + "/php/mores.php?" + coords
 	}).done (function (data) {
 	    data = $.parseJSON (data);
+	    $("#info_pestMore", window.parent.document).css ('visibility', 'hidden');
 	    generateGraph (data['more']);
 	});
     } else {
+	$("#info_pestMore", window.parent.document).css ('visibility', 'visible');
+	var info = window.parent.document.getElementById ('info_pestMore');
+	info.innerHTML = "Chargement des informations de la mol\351cule";
 	$.ajax ({
 	    url: location + "/php/pest.php?pest=" + plist.value
 	}).done (function (data) {
 	    console.log (location + "/php/pest.php?pest=" + plist.value);
 	    console.log (data);
 	    data = $.parseJSON (data);
-	    console.log (data);
+	    $("#info_pestMore", window.parent.document).css ('visibility', 'hidden');
 	    generatePest (data);
 	});
     }
@@ -201,10 +207,14 @@ function fillPoints (callback) {
 	callback (data);
     });
 
+    $("#info_pestMore", window.parent.document).css ('visibility', 'visible');
+    var info = window.parent.document.getElementById ('info_pestMore');
+    info.innerHTML = "Chargement des informations des mol\351cules les plus quantifi\351es";
     $.ajax ({
 	url: location + "/php/mores.php?" + coords
     }).done (function (data) {
 	data = $.parseJSON (data);
+	$("#info_pestMore", window.parent.document).css ('visibility', 'hidden');
 	generateGraph (data['more']);
     });
     
@@ -730,6 +740,15 @@ function onPick (event) {
 	location = location.substr (0, location.lastIndexOf ('/'));
 	var plist = window.parent.document.getElementById ('pestList');
 	console.log (location + "/php/puits.php?puit=" + i + "&pest=" + plist.value);
+	if (plist.value < 0) location = location + "/php/puits.php?puit=" + i + "&pest=" + plist.value
+	else location = location + "/php/puits.php?puit=" + i.substr (1, i.length - 2) + "&pest=" + plist.value
+
+	var info = window.parent.document.getElementById ('info_molecule');
+	info.innerHTML = 'Chargement des informations du puit ' + i;
+	var puit = window.parent.document.getElementById ('infoPuitList');
+	while (puit.children.length > 0) puit.removeChild (puit.children [0]);	
+	$('#info_molecule', window.parent.document).css('visibility', 'visible');
+	
 	$.ajax ({
 	    url : location + "/php/puits.php?puit=" + i + "&pest=" + plist.value 
 	}).done (function (datas) {
@@ -779,13 +798,14 @@ function generateGraphPuit (datas) {
 
     
     $('#chart_molecule', window.parent.document).css('visibility', 'visible');
+    $('#info_molecule', window.parent.document).css('visibility', 'hidden');
     google.charts.load ('current', {packages :  ['corechart', 'line', 'bar'] });
     google.charts.setOnLoadCallback(function () {
 	var data = new google.visualization.DataTable ();
 	data.addColumn ('string', 'X');
 	data.addColumn ('number', datas['criteresLabel']);
 	for (var i in datas['meta']) {
-	    data.addColum (datas[i]['criteresLabel']);
+	    data.addColumn ('number', datas['meta'][i]['criteresLabel']);
 	}
 	
 	for (var i in datas['year']) {
@@ -793,7 +813,7 @@ function generateGraphPuit (datas) {
 	    row.push (parseFloat (datas['year'][i]['value']));
 	    console.log (parseFloat ((datas['year'][i]['value'])));
 	    for (var m in datas['year'][i]['meta'])
-		row.push (datas['year'][i]['meta'][m]);
+		row.push (parseFloat (datas['year'][i]['meta'][m]));
 	    data.addRows ([row]);
 	}
 
@@ -803,7 +823,7 @@ function generateGraphPuit (datas) {
                 title: 'Ann\351es'
 	    },
             vAxis: {
-		title: 'Concentration'
+		title: $('<div>Concentration &micro;/L</div>').html ()
 	    },
             series: {
 		1: { curveType: 'function' }

@@ -42,11 +42,15 @@ if ($pest < 0) {
     
     echo json_encode ($infos);
 } else {
-
-    $requete = 'SELECT * FROM table_2_p where CD_STATION=\'"' . $puit . "\"' and CD_PARAMETRE='\"" . $pest . "\"'";
+    $requete = '';
+    if ($puit[0] == '"')
+	$requete = 'SELECT * FROM table_2_p INNER JOIN liste_param on table_2_p.CD_PARAMETRE=liste_param.CD_PARAMETRE where CD_STATION=\'' . $puit . "' and table_2_p.CD_PARAMETRE='\"" . $pest . "\"'";
+    else
+	$requete = 'SELECT * FROM table_2_p INNER JOIN liste_param on table_2_p.CD_PARAMETRE=liste_param.CD_PARAMETRE where CD_STATION=\'"' . $puit . "\"' and table_2_p.CD_PARAMETRE='\"" . $pest . "\"'";
 
     $rep = $dbh->query ($requete);
-
+    $infos = array ();
+    $infos['year'] = array ();
     while ($donnee = $rep->fetch ()) {
         if (!array_key_exists ('cd_station', $infos)) {
             $infos['cd_station'] = $donnee['CD_STATION'];
@@ -54,19 +58,40 @@ if ($pest < 0) {
             $donnee2 = $rep2->fetch ();
             
             $infos['masse_eau']  = utf8_encode ($donnee2['NomMasseDE']);
-            $infos['criteresLabel'] = 'Concentration'; 
+            $infos['criteresLabel'] = 'Concentration ' . $donnee['LB_PARAMETRE']; 
         }
+		
         $add = false;
-        if (array_key_exists ($donnee['ANNEE'], $infos)) {
-            $add = $donnee['MA_MOY'] > $infos[$donnee['ANNEE']]['value'];
+        if (array_key_exists ($donnee['ANNEE'], $infos['year'])) {
+            $add = $donnee['MA_MOY'] > $infos['year'][$donnee['ANNEE']]['value'];
         } else $add = true;
-        
+
+	
         if ($add) {
             $infos ['year'][$donnee['ANNEE']] = array ('value' => $donnee['MA_MOY'],
             'meta' => array ());            
         }        
     }
 
+    if ($puit[0] == '"')
+	$requete = 'SELECT * FROM table_2_p INNER JOIN liste_param on table_2_p.CD_PARAMETRE=liste_param.CD_PARAMETRE where CD_STATION=\'' . $puit . "' and liste_param.PARENT='\"" . $pest . "\"'";
+    else
+	$requete = 'SELECT * FROM table_2_p INNER JOIN liste_param on table_2_p.CD_PARAMETRE=liste_param.CD_PARAMETRE where CD_STATION=\'"' . $puit . "\"' and liste_param.PARENT='\"" . $pest . "\"'";
+
+    $infos['meta'] = array ();
+    $rep = $dbh->query ($requete);   
+    while ($donnee = $rep->fetch ()) {
+	if (!array_key_exists($donnee['ANNEE'], $infos['year'])) continue;
+	if (!array_key_exists($donnee['CD_PARAMETRE'], $infos['meta'])) {
+	    $infos['meta'][$donnee['CD_PARAMETRE']] = array ('criteresLabel' => 'Concentration ' . $donnee['LB_PARAMETRE']);
+	}
+	
+	if (!array_key_exists($donnee['CD_PARAMETRE'], $infos['year'][$donnee['ANNEE']]['meta'])) {
+	    $infos['year'][$donnee['ANNEE']]['meta'][$donnee['CD_PARAMETRE']] = $donnee['MA_MOY']; 
+	}	
+    }
+    
+    
     echo json_encode ($infos);
 }
 
