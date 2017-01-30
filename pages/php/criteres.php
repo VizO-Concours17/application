@@ -1,4 +1,4 @@
-    <?php
+<?php
 
 $user = "root";
 $pass = "root";
@@ -34,12 +34,12 @@ function getFromTotal () {
     $requete = "SELECT * from table_1_pt where X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2;
     
     if (array_key_exists ('masse', $_GET)) {
-	$requete .= ' and (';
-	for ($i = 0; $i < count ($_GET['masse']); $i++) {
+        $requete .= ' and (';
+        for ($i = 0; $i < count ($_GET['masse']); $i++) {
             $requete .= 'CdMasseDEa = ' . "'" . $_GET['masse'][$i] . "'";
             if ($i < count ($_GET['masse']) - 1) $requete .= ' or ';
-	}
-	$requete .= ')';
+        }
+        $requete .= ')';
     }
     
     
@@ -50,28 +50,37 @@ function getFromTotal () {
     
     
     while ($donnee = $rep->fetch ()) {
-	if (!array_key_exists ($donnee['ANNEE'], $point)) {
+        if (!array_key_exists ($donnee['ANNEE'], $point)) {
             $point[$donnee['ANNEE']] = array ();
-	}
+        }
 	
-	$x = ($donnee['X_FICT_W84'] - $center_x) / $dist_x * 2000 - 1;
-	$y = ($center_y - $donnee['Y_FICT_W84']) / $dist_y * 2000 - 1;
+        $x = ($donnee['X_FICT_W84'] - $center_x) / $dist_x * 2000 - 1;
+        $y = ($center_y - $donnee['Y_FICT_W84']) / $dist_y * 2000 - 1;
 
 
-	// Taille sphere <- avec de classe de taille.
-	
-	if (!array_key_exists ($donnee['CD_STATION'], $point[$donnee['ANNEE']])) {
+        // Taille sphere <- avec de classe de taille.
+        
+        $add = false;
+        if (array_key_exists ($donnee['CD_STATION'], $point[$donnee['ANNEE']])) {
+            if ($pest == -1) $add = $donnee['MAXPTOT'] > $point[$donnee['ANNEE']][$donnee['CD_STATION']]['MAXPTOT'];
+            else $add = $donnee['MOYPTOT'] > $point[$donnee['ANNEE']][$donnee['CD_STATION']]['MOYPTOT'];
+        } else $add = true;
+        
+        if ($add) {
             $point [ $donnee['ANNEE'] ] [$donnee ['CD_STATION']] = array ('x' => $x,
-									  'y' => $y,
-									  'z' => $donnee['ALTITUDE'],
-									  'depth' => $donnee['PROFONDEUR_MAXI_POINT'] + $donnee['ALTITUDE'],
-									  'labelTop' => $donnee['CD_STATION'],
-									  'labelBot' =>  ($pest == -1  ? ($donnee['MAXPTOT']) : $donnee['MOYPTOT']) . " ; " . $donnee['MAQMOLQ'] . "/" . $donnee['MAXMOLRECH'],
-									  'sphereRadius' => toClasseMaxMolRech ($donnee ['MAXMOLRECH']),
-									  'sphereColor' => ($pest == -1 ? toColorClasse ($donnee['MAXPTOT'], $donnee['MAQMOLQ']) : toColorClasse ($donnee['MOYPTOT'], $donnee['MAQMOLQ']) ),
-									  'lineWidth' => 3,
-									  'lineColor' => masseColor ($donnee['CdMasseDEa']));
-	}
+            'y' => $y,
+            'z' => $donnee['ALTITUDE'],
+            'depth' => $donnee['PROFONDEUR_MAXI_POINT'] + $donnee['ALTITUDE'],
+            'labelTop' => $donnee['CD_STATION'],
+            'labelBot' =>  ($pest == -1  ? ($donnee['MAXPTOT']) : $donnee['MOYPTOT']) . " ; " . $donnee['MAQMOLQ'] . "/" . $donnee['MAXMOLRECH'],
+            'sphereRadius' => toClasseMaxMolRech ($donnee ['MAXMOLRECH']),
+            'sphereColor' => ($pest == -1 ? toColorClasse ($donnee['MAXPTOT'], $donnee['MAQMOLQ']) : toColorClasse ($donnee['MOYPTOT'], $donnee['MAQMOLQ']) ),
+            'lineWidth' => 3,
+            'lineColor' => masseColor ($donnee['CdMasseDEa']),
+            'idPuit' => $donnee['CD_STATION'],
+            'MAXPTOT' => $donnee['MAXPTOT'],
+            'MOYPTOT' => $donnee['MOYPTOT']);
+        }
 	
     }
 
@@ -83,41 +92,46 @@ function getFromPest () {
     global $x1, $x2, $y1, $y2, $pest, $dbh, $center_x, $center_y, $dist_x, $dist_y;
     $requete = "SELECT * from table_2_p AS A  where  A.X_FICT_W84 >= " . $x1 . " and A.X_FICT_W84 <= " . $x2 . " and A.Y_FICT_W84 >= " . $y1 . " and A.Y_FICT_W84 <= ". $y2;
     
- /*   if (array_key_exists ('masse', $_GET)) {
-	$requete .= ' and (';
-	for ($i = 0; $i < count ($_GET['masse']); $i++) {
-            $requete .= 'CdMasseDEa = ' . "'" . $_GET['masse'][$i] . "'";
-            if ($i < count ($_GET['masse']) - 1) $requete .= ' or ';
-	}
-	$requete .= ')';
-    }*/
+    /*   if (array_key_exists ('masse', $_GET)) {
+         $requete .= ' and (';
+         for ($i = 0; $i < count ($_GET['masse']); $i++) {
+         $requete .= 'CdMasseDEa = ' . "'" . $_GET['masse'][$i] . "'";
+         if ($i < count ($_GET['masse']) - 1) $requete .= ' or ';
+         }
+         $requete .= ')';
+         }*/
     $requete .= " and CD_PARAMETRE='\"" . $pest . "\"'"; 
     $rep = $dbh->query ($requete);
     $point = array ();
     $max_prof = 0;
     
     while ($donnee = $rep->fetch ()) {
-	if (!array_key_exists ($donnee['ANNEE'], $point)) {
+        if (!array_key_exists ($donnee['ANNEE'], $point)) {
             $point[$donnee['ANNEE']] = array ();
-	}
+        }
 	
-	$x = ($donnee['X_FICT_W84'] - $center_x) / $dist_x * 2000 - 1;
-	$y = ($center_y - $donnee['Y_FICT_W84']) / $dist_y * 2000 - 1;
+        $x = ($donnee['X_FICT_W84'] - $center_x) / $dist_x * 2000 - 1;
+        $y = ($center_y - $donnee['Y_FICT_W84']) / $dist_y * 2000 - 1;
 
-	if (!array_key_exists ($donnee['CD_STATION'], $point[$donnee['ANNEE']])) {
-	    $rep2 = $dbh->query ("SELECT ALTITUDE, PROFONDEUR_MAXI_POINT FROM table_1_pt where CD_STATION=" . $donnee['CD_STATION']);
-	    $donnee2 = $rep2->fetch ();
+        $add = false;
+        if (array_key_exists ($donnee['CD_STATION'], $point[$donnee['ANNEE']])) {
+            $add = $donnee['MA_MOY'] > $point[$donnee['ANNEE']][$donnee['CD_STATION']]['MA_MOY'];
+        } else $add = true;
+        
+        if ($add) {
             $point [ $donnee['ANNEE'] ] [$donnee ['CD_STATION']] = array ('x' => $x,
-									  'y' => $y,
-									  'z' => $donnee2['ALTITUDE'],
-									  'depth' => $donnee2['PROFONDEUR_MAXI_POINT'] + $donnee2['ALTITUDE'],
-									  'labelTop' => $donnee['CD_STATION'],
-									  'labelBot' =>  ($donnee['MA_MOY'] . " ; " . $donnee['NBQUANTIF'] . "/" . $donnee['NBANASPERTS1']),
-									  'sphereRadius' => toClasseMolRech ($donnee ['NBANASPERTS1']),
-									  'sphereColor' => (toColorClasse ($donnee['MA_MOY'], $donnee['NBQUANTIF'])),
-									  'lineWidth' => 3,
-									  'lineColor' => masseColor ($donnee['CdMasseDEa']));
-	}
+            'y' => $y,
+            'z' => $donnee['ALTITUDE'],
+            'depth' => $donnee['PROFONDEUR_MAXI_POINT'] + $donnee['ALTITUDE'],
+            'labelTop' => $donnee['CD_STATION'],
+            'labelBot' =>  ($donnee['MA_MOY'] . " ; " . $donnee['NBQUANTIF'] . "/" . $donnee['NBANASPERTS1']),
+            'sphereRadius' => toClasseMolRech ($donnee ['NBANASPERTS1']),
+            'sphereColor' => (toColorClasse ($donnee['MA_MOY'], $donnee['NBQUANTIF'])),
+            'lineWidth' => 3,
+            'lineColor' => masseColor ($donnee['CdMasseDEa']),
+            'idPuit' => $donnee['CD_STATION'],
+            'MA_MOY' => $donnee['MA_MOY']);
+        }
     }
 
     echo json_encode($point);
@@ -159,11 +173,11 @@ $colors = array ();
 function masseColor ($name) {
     global $colors;
     if ($colors && array_key_exists ($name, $colors)) {
-	return $colors [$name];
+        return $colors [$name];
     } else {
-	$r = rand (0x000000, 0xFFFFFF);
-	$colors [$name] = $r;
-	return $r;
+        $r = rand (0x000000, 0xFFFFFF);
+        $colors [$name] = $r;
+        return $r;
     }    
 }
 
@@ -199,4 +213,4 @@ function newColor () {
 // Point à zero si pas de quantif
 
 
-    ?>
+?>

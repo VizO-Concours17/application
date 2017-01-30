@@ -235,25 +235,23 @@ desired effect
                         </div>
                         <!-- /.box -->
 
-                        <div class="box box-solid">
+                        <div class="box box-solid md-12" >
                             <div class="box-header with-border">
                                 <i class="fa fa-book"></i>
-
+
                                 <h3 class="box-title">Informations sur l'application Viz'O</h3>
                             </div>
                             <!-- /.box-header -->
-                            <div class="box-body">
-                                <h1>Lorem ipsum dolor sit amet, consectetur adipiscing elit. </h1>
-
-                                <h2>Vivamus pulvinar ultrices faucibus.</h2>
-
-                                <p>
-                                    Cras vitae mauris sit amet est porta pharetra quis porttitor quam. Cras mattis viverra diam quis aliquet. Aliquam vel ultricies arcu. Integer malesuada nunc vitae arcu rutrum, ut interdum neque tincidunt. Mauris id diam ultrices, vehicula libero sit amet, ultricies urna. Mauris ac leo nec orci consequat mattis non quis sapien. Etiam commodo tortor ut risus efficitur malesuada.
-                                </p>
-
-                                <p>
-                                    In sit amet leo venenatis, porttitor dolor eu, rutrum ligula. Ut varius ante eros, nec condimentum lacus convallis vitae. Pellentesque aliquet ornare luctus. Donec sit amet euismod nibh, quis tempus tellus. Vivamus ante metus, semper id aliquet ac, convallis ac nisl. Suspendisse pulvinar et leo at tincidunt. Sed vitae vestibulum elit. Phasellus facilisis vulputate nisl, nec elementum urna porta pharetra. Quisque vel porta justo. Nullam sodales pharetra tincidunt. Maecenas eu neque purus.
-                                </p>
+                            <div class="box-body">			      
+                              <h2> Pesticides totaux : </h2>
+                              <p>
+				Les données représentées correspondent soit à la moyenne des concentrations totales en pesticides mesurées au cours de l’année sélectionnée au niveau de la station sélectionnée (pesticides totaux – moyenne), soit à la valeur maximale des concentrations totales mesurées au cours de l’année sélectionnée pour la station sélectionnée (pesticides totaux – maximum). Les concentrations totales correspondent à la somme des concentrations de tous les composés qui ont pu être quantifiés. Ainsi, des pesticides qui sont détectés mais dont la quantité est trop faible pour en permettre la quantification, ne sont pas pris en compte.</p>
+			      <h2> Chaque pesticide : </h2>
+			      <p>
+				Les données représentées correspondent à la moyenne des concentrations du pesticide recherché qui ont été mesurées au cours de l’année sélectionnée au niveau de la station sélectionnée. Deux types de mesures sont prises en compte dans le calcul de la somme des concentrations du pesticide : les analyses quantifiées et celles non quantifiées. Les concentrations correspondent à la concentration mesurée dans l’échantillon dans le cas d’une analyse quantifiée. Dans le cas d’une analyse non quantifiée, la concentration attribuée à l’échantillon correspond à la moitié de la valeur constituant la limite de quantification de l’appareil de mesure, que le pesticide soit détecté ou non.
+			      </p>
+			      <p>
+				<img src="pages/texture/img.jpg"/>
                             </div>
                             <!-- /.box-body -->
                         </div>
@@ -315,11 +313,7 @@ desired effect
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="box-footer no-padding">
-                                            <ul class="nav nav-stacked">
-                                                <li><a href="#">Code Station <span class="pull-right badge bg-blue">12345678X01234</span></a></li>
-                                                <li><a href="#">Masse d'eau <span class="pull-right badge bg-blue">F000001</span></a></li>
-                                                <li><a href="#">Indicateur <span class="pull-right badge bg-blue">X</span></a></li>
-                                                <li><a href="#">Indicateur <span class="pull-right badge bg-blue">Y</span></a></li>
+                                            <ul class="nav nav-stacked" id="infoPuitList">
                                             </ul>
                                         </div>
                                     </div>
@@ -332,13 +326,6 @@ desired effect
                                 </div>
 
                             </div>
-                            <!-- ./box-body -->
-                            <div class="box-footer">
-                                <label>
-                                    <input type="checkbox" class="minimal" checked> Afficher les métabolites sur le graphique
-                                </label>
-                            </div>
-                            <!-- /.box-footer -->
                         </div>
                         <!-- /.box -->
                     </div>
@@ -386,77 +373,29 @@ desired effect
 
       
       function reloadStyle () {
-      $('.slider').slider();
-      
-      //Initialize Select2 Elements
-     // $(".select2").select2();
-      
-      //CheckBoxes & Radio
-      $('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
-      checkboxClass: 'icheckbox_flat-green',
-      radioClass: 'iradio_flat-green'
-      });
-      
-      $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
-      checkboxClass: 'icheckbox_minimal-blue',
-      radioClass: 'iradio_minimal-blue'
-      });
-      
+	  $('.slider').slider();
+	  
+	  //Initialize Select2 Elements
+	  // $(".select2").select2();
+	  
+	  //CheckBoxes & Radio
+	  $('input[type="checkbox"].flat-red, input[type="radio"].flat-red').iCheck({
+										     checkboxClass: 'icheckbox_flat-green',
+										     radioClass: 'iradio_flat-green'
+										    });
+	  
+	  $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
+										   checkboxClass: 'icheckbox_minimal-blue',
+										   radioClass: 'iradio_minimal-blue'
+										  });
+	  
       }
       
-        //Slider
-        $(reloadStyle);   
-
-
-
-        // Google chart
-        google.charts.load('current', { packages: ['corechart', 'line', 'bar'] });
-        google.charts.setOnLoadCallback(loadCharts);
-
-        function loadCharts() {
-            drawCurve();
-        }
-
+//Slider
+$(reloadStyle);   
 
-
-        function drawCurve() {
-            var data = new google.visualization.DataTable();
-            data.addColumn('number', 'X');
-            data.addColumn('number', 'Molécule A');
-            data.addColumn('number', 'Métabolite : Molécule X');
-
-            data.addRows([
-              [0, 0, 0], [1, 10, 5], [2, 23, 15], [3, 17, 9], [4, 18, 10], [5, 9, 5],
-              [6, 11, 3], [7, 27, 19], [8, 33, 25], [9, 40, 32], [10, 32, 24], [11, 35, 27],
-              [12, 30, 22], [13, 40, 32], [14, 42, 34], [15, 47, 39], [16, 44, 36], [17, 48, 40],
-              [18, 52, 44], [19, 54, 46], [20, 42, 34], [21, 55, 47], [22, 56, 48], [23, 57, 49],
-              [24, 60, 52], [25, 50, 42], [26, 52, 44], [27, 51, 43], [28, 49, 41], [29, 53, 45],
-              [30, 55, 47], [31, 60, 52], [32, 61, 53], [33, 59, 51], [34, 62, 54], [35, 65, 57],
-              [36, 62, 54], [37, 58, 50], [38, 55, 47], [39, 61, 53], [40, 64, 56], [41, 65, 57],
-              [42, 63, 55], [43, 66, 58], [44, 67, 59], [45, 69, 61], [46, 69, 61], [47, 70, 62],
-              [48, 72, 64], [49, 68, 60], [50, 66, 58], [51, 65, 57], [52, 67, 59], [53, 70, 62],
-              [54, 71, 63], [55, 72, 64], [56, 73, 65], [57, 75, 67], [58, 70, 62], [59, 68, 60],
-              [60, 64, 56], [61, 60, 52], [62, 65, 57], [63, 67, 59], [64, 68, 60], [65, 69, 61],
-              [66, 70, 62], [67, 72, 64], [68, 75, 67], [69, 80, 72]
-            ]);
-
-            var options = {
-                chartArea: { width: '50%' },
-                hAxis: {
-                    title: 'Années'
-                },
-                vAxis: {
-                    title: 'Concentration'
-                },
-                series: {
-                    1: { curveType: 'function' }
-                }
-            };
-
-            var chart = new google.visualization.LineChart(document.getElementById('chart_molecule'));
-            chart.draw(data, options);
-        }
-
+
+
     </script>
     <!-- Optionally, you can add Slimscroll and FastClick plugins.
          Both of these plugins are recommended to enhance the

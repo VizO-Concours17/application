@@ -1,4 +1,5 @@
 
+
 var scene, camera, renderer, labelRenderer;
 var ancx = -1, ancy = -1, start;
 var phi = 0, teta = 60, target;
@@ -13,6 +14,7 @@ var aspect;
 var orScene, orCube, orCamera;
 
 var points;
+var donnee;
 
 
 /**
@@ -69,6 +71,7 @@ function init() {
 
     
     function arrangeDatas (datas) {
+	donnee = datas;
 	createDatas (datas);	
 	currentYear = meshPerYear.length - 1;
 	
@@ -255,6 +258,7 @@ function createBoxe (data) {
     cyl_mesh.position.y = (data ['z'] - data['depth'] / 2);
     cyl_mesh.position.z = data ['y'];
     cyl_mesh.castShadow = true;
+    cyl_mesh.idPuit = data['idPuit'];
     
     var box_mesh = new THREE.Mesh (box, cyl_mat);
     box_mesh.position.x = data['x'];
@@ -262,6 +266,7 @@ function createBoxe (data) {
     box_mesh.position.y = data ['z'];
     box_mesh.castShadow = true;
     box_mesh.name = data['labelTop'];
+    box_mesh.idPuit = data['idPuit'];
         
     var sph_mesh = new THREE.Mesh (sphere, sph_mat);
     sph_mesh.position.x = data['x'];
@@ -269,6 +274,7 @@ function createBoxe (data) {
     sph_mesh.position.z = data['y'];
     sph_mesh.castShadow = true;
     sph_mesh.name = data['labelBot'];
+    sph_mesh.idPuit = data['idPuit'];
     
     return [sph_mesh, cyl_mesh, box_mesh];
 }
@@ -384,6 +390,7 @@ function createBasicRender () {
     renderer.domElement.addEventListener ("mousemove", pick, false);
     renderer.domElement.addEventListener ("mousemove", pickCube, false);
     renderer.domElement.addEventListener ("click", pickCubeClick, false);
+    renderer.domElement.addEventListener ("click", onPick, false);
     renderer.autoClear = false;
     
     labelRenderer = new THREE.CSS2DRenderer ();
@@ -718,10 +725,19 @@ function onPick (event) {
     
     var intersects = raycaster.intersectObjects (meshPerYear [currentYear]);
     if (intersects.length > 0) {
-	console.log ("print graph");
+	var i = intersects[0].object.idPuit;
+	var location = window.location.href;
+	location = location.substr (0, location.lastIndexOf ('/'));
+	var plist = window.parent.document.getElementById ('pestList');
+	console.log (location + "/php/puits.php?puit=" + i + "&pest=" + plist.value);
+	$.ajax ({
+	    url : location + "/php/puits.php?puit=" + i + "&pest=" + plist.value 
+	}).done (function (datas) {
+	    datas = $.parseJSON (datas);
+	    generateGraphPuit (datas);
+	});		
     }
 }
-
 
 /**
    Rendu de la scene
@@ -739,6 +755,67 @@ function animate() {
     
     renderer.setViewport (0, h - 10 - h / 5, w / 5, h / 5);   
     renderer.render (orScene, orCamera);    
+}
+
+function generateGraphPuit (datas) {
+    var puit = window.parent.document.getElementById ('infoPuitList');
+    while (puit.children.length > 0) puit.removeChild (puit.children [0]);	
+
+    var li2 = document.createElement('li');
+    var span2 = document.createElement ('span');
+    span2.className = "pull-right badge bg-blue";
+    li2.innerHTML = 'Nom';
+    span2.innerHTML = datas['cd_station'];
+    li2.appendChild (span2);
+    puit.appendChild (li2);
+    
+    var li3 = document.createElement('li');
+    var span3 = document.createElement ('span');
+    span3.className = "pull-right badge bg-blue";
+    li3.innerHTML = 'Masse d\'eau';
+    span3.innerHTML = datas['masse_eau'];
+    li3.appendChild (span3);
+    puit.appendChild (li3);
+
+    
+    $('#chart_molecule', window.parent.document).css('visibility', 'visible');
+    google.charts.load ('current', {packages :  ['corechart', 'line', 'bar'] });
+    google.charts.setOnLoadCallback(function () {
+	var data = new google.visualization.DataTable ();
+	data.addColumn ('string', 'X');
+	data.addColumn ('number', datas['criteresLabel']);
+	for (var i in datas['meta']) {
+	    data.addColum (datas[i]['criteresLabel']);
+	}
+	
+	for (var i in datas['year']) {
+	    var row = [i];
+	    row.push (parseFloat (datas['year'][i]['value']));
+	    console.log (parseFloat ((datas['year'][i]['value'])));
+	    for (var m in datas['year'][i]['meta'])
+		row.push (datas['year'][i]['meta'][m]);
+	    data.addRows ([row]);
+	}
+
+	var options = {
+            chartArea: { width: '50%' },
+            hAxis: {
+                title: 'Ann\351es'
+	    },
+            vAxis: {
+		title: 'Concentration'
+	    },
+            series: {
+		1: { curveType: 'function' }
+            }
+        };
+	
+	var chart = new google.visualization.LineChart (window.parent.document.getElementById ('chart_molecule'));
+	chart.draw (data, options);
+
+    });
+        
+    
 }
 
 function generatePest (datas) {
