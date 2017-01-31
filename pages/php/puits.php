@@ -23,8 +23,8 @@ if ($pest < 0) {
             $infos['cd_station'] = $donnee['CD_STATION'];
             $rep2 = $dbh->query ('SELECT NomMasseDE FROM liste_made WHERE CdMasseDEa=\'' . $donnee['CdMasseDEa'] . "'");
             $donnee2 = $rep2->fetch ();
-            
-            $infos['masse_eau']  = utf8_encode ($donnee2['NomMasseDE']);
+            if (!$donnee2) $infos['masse_eau'] = $donnee['CdMasseDEa'];
+            else $infos['masse_eau']  = utf8_encode ($donnee2['NomMasseDE']);
             if ($pest == -1) $infos['criteresLabel'] = 'Concentration maximale';
             else $infos['criteresLabel'] = 'Concentration moyenne';            
         }
@@ -56,9 +56,12 @@ if ($pest < 0) {
             $infos['cd_station'] = $donnee['CD_STATION'];
             $rep2 = $dbh->query ('SELECT NomMasseDE FROM liste_made WHERE CdMasseDEa=\'' . $donnee['CdMasseDEa'] . "'");
             $donnee2 = $rep2->fetch ();
-            
-            $infos['masse_eau']  = utf8_encode ($donnee2['NomMasseDE']);
-            $infos['criteresLabel'] = 'Concentration ' . $donnee['LB_PARAMETRE']; 
+	    
+            if (!$donnee2) $infos['masse_eau'] = $donnee['CdMasseDEa'];
+            else $infos['masse_eau']  = utf8_encode ($donnee2['NomMasseDE']);
+	    
+            $infos['criteresLabel'] = $donnee['LB_PARAMETRE'];
+	    $infos['nb_year'] = 0;
         }
 		
         $add = false;
@@ -68,6 +71,7 @@ if ($pest < 0) {
 
 	
         if ($add) {
+	    $infos['nb_year'] ++;
             $infos ['year'][$donnee['ANNEE']] = array ('value' => $donnee['MA_MOY'],
             'meta' => array ());            
         }        
@@ -83,10 +87,11 @@ if ($pest < 0) {
     while ($donnee = $rep->fetch ()) {
 	if (!array_key_exists($donnee['ANNEE'], $infos['year'])) continue;
 	if (!array_key_exists($donnee['CD_PARAMETRE'], $infos['meta'])) {
-	    $infos['meta'][$donnee['CD_PARAMETRE']] = array ('criteresLabel' => 'Concentration ' . $donnee['LB_PARAMETRE']);
+	    $infos['meta'][$donnee['CD_PARAMETRE']] = array ('criteresLabel' => $donnee['LB_PARAMETRE'], 'nb' => 0);
 	}
 	
 	if (!array_key_exists($donnee['CD_PARAMETRE'], $infos['year'][$donnee['ANNEE']]['meta'])) {
+	    $infos['meta'][$donnee['CD_PARAMETRE']]['nb'] ++;
 	    $infos['year'][$donnee['ANNEE']]['meta'][$donnee['CD_PARAMETRE']] = $donnee['MA_MOY']; 
 	}	
     }

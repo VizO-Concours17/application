@@ -146,8 +146,8 @@ function toColorClasse ($cl, $qu) {
     if ($qu == 0) return 0xFFFFFF << 0 ;
     if ($cl < 0.1) return 0xe1eF75 << 0;
     if ($cl < 0.5) return 0xF9a702 << 0;
-    if ($cl < 5) return 0xF9a702 << 0;
-    return 0x1C0003;        
+    if ($cl < 5) return 0xF31919 << 0;
+    return 0x590009;        
 }
 
 

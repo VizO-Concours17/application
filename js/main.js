@@ -104,6 +104,9 @@ function init() {
 	    range.setAttribute ('value', '0');	    
 	    range.onchange = rangeChanged;
 	}
+	var legende = window.parent.document.getElementById ('legende');
+	console.log (legende);
+	legende.style.display = 'block';
 	window.parent.reloadStyle ();
 	$('#rangeText', window.parent.document).text ("Ann\351e des donn\351es");
 	
@@ -162,7 +165,7 @@ function formOk (callback) {
 	callback (data);
     });    
 
-    $("#info_pestMore", window.parent.document).css ('visibility', 'visible');
+    $("#info_pestMore", window.parent.document).css ('display', 'block');
     var info = window.parent.document.getElementById ('info_pestMore');
     info.innerHTML = "Chargement des informations des mol\351cules les plus quantifi\351es";
     if (plist.value == -1 || plist.value == -2) {
@@ -170,11 +173,11 @@ function formOk (callback) {
 	    url: location + "/php/mores.php?" + coords
 	}).done (function (data) {
 	    data = $.parseJSON (data);
-	    $("#info_pestMore", window.parent.document).css ('visibility', 'hidden');
+	    $("#info_pestMore", window.parent.document).css ('display', 'none');
 	    generateGraph (data['more']);
 	});
     } else {
-	$("#info_pestMore", window.parent.document).css ('visibility', 'visible');
+	$("#info_pestMore", window.parent.document).css ('display', 'block');
 	var info = window.parent.document.getElementById ('info_pestMore');
 	info.innerHTML = "Chargement des informations de la mol\351cule";
 	$.ajax ({
@@ -183,7 +186,7 @@ function formOk (callback) {
 	    console.log (location + "/php/pest.php?pest=" + plist.value);
 	    console.log (data);
 	    data = $.parseJSON (data);
-	    $("#info_pestMore", window.parent.document).css ('visibility', 'hidden');
+	    $("#info_pestMore", window.parent.document).css ('display', 'none');
 	    generatePest (data);
 	});
     }
@@ -201,20 +204,20 @@ function fillPoints (callback) {
     var coords = window.parent.document.getElementById ('3d-coords').innerHTML.replace (/&amp;/g, '&');
 
     $.ajax ({
-	url: location + "/php/criteres.php?" + coords + "&pest=-1"
+	url: location + "/php/criteres.php?" + coords + "&pest=-2"
     }).done (function (data) {
 	data = $.parseJSON (data);
 	callback (data);
     });
 
-    $("#info_pestMore", window.parent.document).css ('visibility', 'visible');
+    $("#info_pestMore", window.parent.document).css ('display', 'block');
     var info = window.parent.document.getElementById ('info_pestMore');
     info.innerHTML = "Chargement des informations des mol\351cules les plus quantifi\351es";
     $.ajax ({
 	url: location + "/php/mores.php?" + coords
     }).done (function (data) {
 	data = $.parseJSON (data);
-	$("#info_pestMore", window.parent.document).css ('visibility', 'hidden');
+	$("#info_pestMore", window.parent.document).css ('display', 'none');
 	generateGraph (data['more']);
     });
     
@@ -744,10 +747,10 @@ function onPick (event) {
 	else location = location + "/php/puits.php?puit=" + i.substr (1, i.length - 2) + "&pest=" + plist.value
 
 	var info = window.parent.document.getElementById ('info_molecule');
-	info.innerHTML = 'Chargement des informations du puit ' + i;
+	info.innerHTML = 'Chargement des informations du puits ' + i;
 	var puit = window.parent.document.getElementById ('infoPuitList');
 	while (puit.children.length > 0) puit.removeChild (puit.children [0]);	
-	$('#info_molecule', window.parent.document).css('visibility', 'visible');
+	$('#info_molecule', window.parent.document).css('display', 'block');
 	
 	$.ajax ({
 	    url : location + "/php/puits.php?puit=" + i + "&pest=" + plist.value 
@@ -784,7 +787,10 @@ function generateGraphPuit (datas) {
     var span2 = document.createElement ('span');
     span2.className = "pull-right badge bg-blue";
     li2.innerHTML = 'Nom';
-    span2.innerHTML = datas['cd_station'];
+    if (datas['cd_station'][0] == '"')
+	span2.innerHTML = datas['cd_station'].substr (1, datas['cd_station'].length - 2);
+    else
+	span2.innerHTML = datas['cd_station'];
     li2.appendChild (span2);
     puit.appendChild (li2);
     
@@ -792,28 +798,40 @@ function generateGraphPuit (datas) {
     var span3 = document.createElement ('span');
     span3.className = "pull-right badge bg-blue";
     li3.innerHTML = 'Masse d\'eau';
-    span3.innerHTML = datas['masse_eau'];
+    if (datas['masse_eau'][0] == '"')
+	span3.innerHTML = datas['masse_eau'].substr (1, datas['masse_eau'].length - 2);
+    else span3.innerHTML = datas['masse_eau'];	
     li3.appendChild (span3);
     puit.appendChild (li3);
 
     
-    $('#chart_molecule', window.parent.document).css('visibility', 'visible');
-    $('#info_molecule', window.parent.document).css('visibility', 'hidden');
+    $('#chart_molecule', window.parent.document).css('display', 'block');
+    $('#info_molecule', window.parent.document).css('display', 'none');
     google.charts.load ('current', {packages :  ['corechart', 'line', 'bar'] });
     google.charts.setOnLoadCallback(function () {
 	var data = new google.visualization.DataTable ();
 	data.addColumn ('string', 'X');
-	data.addColumn ('number', datas['criteresLabel']);
+	if (datas['criteresLabel'][0] == '"') 
+	    data.addColumn ('number', datas['criteresLabel'].substr (1, datas['criteresLabel'].length - 2));
+	else data.addColumn ('number', datas['criteresLabel']);
+	var nots = [];
 	for (var i in datas['meta']) {
-	    data.addColumn ('number', datas['meta'][i]['criteresLabel']);
+	    if (datas['meta'][i]['nb'] == datas['nb_year']) {
+		if (datas['meta'][i]['criteresLabel'][0] == '"')
+		    data.addColumn ('number', datas['meta'][i]['criteresLabel'].substr (1, datas['meta'][i]['criteresLabel'].length - 2));
+		else
+		    data.addColumn ('number', datas['meta'][i]['criteresLabel']);
+	    }
+	    else nots[i] = true;
 	}
 	
 	for (var i in datas['year']) {
 	    var row = [i];
 	    row.push (parseFloat (datas['year'][i]['value']));
-	    console.log (parseFloat ((datas['year'][i]['value'])));
-	    for (var m in datas['year'][i]['meta'])
-		row.push (parseFloat (datas['year'][i]['meta'][m]));
+	    for (var m in datas['year'][i]['meta']) {
+		if (!(m in nots))
+		    row.push (parseFloat (datas['year'][i]['meta'][m]));
+	    }
 	    data.addRows ([row]);
 	}
 
@@ -823,7 +841,7 @@ function generateGraphPuit (datas) {
                 title: 'Ann\351es'
 	    },
             vAxis: {
-		title: $('<div>Concentration &micro;/L</div>').html ()
+		title: $('<div>Concentration &micro;g/L</div>').html ()
 	    },
             series: {
 		1: { curveType: 'function' }
@@ -839,8 +857,8 @@ function generateGraphPuit (datas) {
 }
 
 function generatePest (datas) {
-    $('#boxMol', window.parent.document).css('visibility', 'visible');
-    $('#chart_detection', window.parent.document).css('visibility', 'hidden');
+    $('#boxMol', window.parent.document).css('display', 'block');
+    $('#chart_detection', window.parent.document).css('display', 'none');
     var mol = window.parent.document.getElementById ('infoMolList');
     while (mol.children.length > 0)
 	mol.removeChild (mol.children [0]);
@@ -849,7 +867,10 @@ function generatePest (datas) {
     var span = document.createElement ('span');
     span.className = "pull-right badge bg-blue";
     li.innerHTML = 'Nom';
-    span.innerHTML = datas['nom'];
+    if (datas['nom'][0] == '"')
+	span.innerHTML = datas['nom'].substr (1, datas['nom'].length - 2);
+    else span.innerHTML = datas['nom'];
+    
     li.appendChild (span);
     mol.appendChild (li);
 
@@ -857,7 +878,9 @@ function generatePest (datas) {
     var span2 = document.createElement ('span');
     span2.className = "pull-right badge bg-blue";
     li2.innerHTML = 'Famille';
-    span2.innerHTML = datas['famille'].replace ('é', '\351');
+    if (datas['famille'][0] == '"')
+	span2.innerHTML = datas['famille'].substr (1, datas['famille'].length - 2).replace ('é', '\351');
+    else span2.innerHTML = datas['famille'].replace ('é', '\351');
     li2.appendChild (span2);
     mol.appendChild (li2);
     
@@ -888,7 +911,10 @@ function generatePest (datas) {
 	var span5 = document.createElement ('span');
 	span5.className = "pull-right badge bg-blue";
 	li5.innerHTML = "Date d'interdiction";
-	span5.innerHTML = datas['date'];
+	var i = datas['date'].indexOf (' 00');
+	if (i == -1) 
+	    span5.innerHTML = datas['date'];
+	else span5.innerHTML = datas['date'].substr (0, i);
 	li5.appendChild (span5);
 	mol.appendChild (li5);	
     }
@@ -931,7 +957,7 @@ function generateGraph (datas) {
 		title: 'Mol\351cules les plus souvent quantifi\351es',
 		chartArea: { width: '50%' },
 		hAxis: {
-		    title: 'Nombre de quantifications totale',
+		    title: 'Nombre de quantifications',
 		    minValue: 0
 		},
 		vAxis: {
@@ -943,12 +969,12 @@ function generateGraph (datas) {
 		mol.removeChild (mol.children [0]);
 	    
 	    var data = new google.visualization.arrayToDataTable (quantif);
-	    $('#chart_detection', window.parent.document).css('visibility', 'visible');
-	    $('#boxMol', window.parent.document).css('visibility', 'visible');
+	    $('#chart_detection', window.parent.document).css('display', 'block');
+	    $('#boxMol', window.parent.document).css('display', 'block');
 	    var chart = new google.visualization.BarChart (window.parent.document.getElementById ('chart_detection'));
 	    chart.draw (data, options);
 	    var titre = window.parent.document.getElementById ('titreMol');
-	    titre.innerHTML = "Nombre de quantification de la zone de recherche";
+	    titre.innerHTML = "Nombre de quantifications de la zone d'étude";
 	});
     }
           

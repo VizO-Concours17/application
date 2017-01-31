@@ -169,7 +169,9 @@ function addMasse (name) {
 function addPest (name) {
     var list = document.getElementById ('pestList');
     var option = document.createElement ('option');
-    option.innerHTML = name['lb'];
+    if (name['lb'][0] == '"')
+	option.innerHTML = name['lb'].substr (1, name['lb'].length - 2);
+    else option.innerHTML = name['lb'];
     option.setAttribute ('value', name['cd'].substr (1, name['cd'].length - 2));
     list.appendChild (option);
 }
@@ -205,15 +207,17 @@ function setDisplay (coords) {
 	while (plist.children.length > 0)
 	    plist.removeChild (plist.children [0]);
 
+	var opt2 = document.createElement ('option');
+	opt2.setAttribute ('value', '-2');
+	opt2.innerHTML = 'Pesticides totaux - concentration moyenne';	
+	plist.appendChild (opt2);
+	
 	var opt1 = document.createElement ('option');
 	opt1.setAttribute ('value', '-1');
 	opt1.innerHTML = 'Pesticides totaux - concentration maximale';
 	plist.appendChild (opt1);
 
-	var opt2 = document.createElement ('option');
-	opt2.setAttribute ('value', '-2');
-	opt2.innerHTML = 'Pesticides totaux - concentration moyenne';
-	plist.appendChild (opt2);
+
 	
 	console.log (data);
 	for (i = 0; i < data["masse"].length ; i++) {
