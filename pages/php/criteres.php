@@ -92,14 +92,15 @@ function getFromPest () {
     global $x1, $x2, $y1, $y2, $pest, $dbh, $center_x, $center_y, $dist_x, $dist_y;
     $requete = "SELECT * from table_2_p AS A  where  A.X_FICT_W84 >= " . $x1 . " and A.X_FICT_W84 <= " . $x2 . " and A.Y_FICT_W84 >= " . $y1 . " and A.Y_FICT_W84 <= ". $y2;
     
-    /*   if (array_key_exists ('masse', $_GET)) {
-         $requete .= ' and (';
-         for ($i = 0; $i < count ($_GET['masse']); $i++) {
-         $requete .= 'CdMasseDEa = ' . "'" . $_GET['masse'][$i] . "'";
-         if ($i < count ($_GET['masse']) - 1) $requete .= ' or ';
-         }
-         $requete .= ')';
-         }*/
+    if (array_key_exists ('masse', $_GET)) {
+        $requete .= ' and (';
+        for ($i = 0; $i < count ($_GET['masse']); $i++) {
+            $requete .= 'CdMasseDEa = ' . "'\"" . $_GET['masse'][$i] . "\"'";
+            if ($i < count ($_GET['masse']) - 1) $requete .= ' or ';
+        }
+        $requete .= ')';
+    }
+    
     $requete .= " and CD_PARAMETRE='\"" . $pest . "\"'"; 
     $rep = $dbh->query ($requete);
     $point = array ();
