@@ -974,7 +974,7 @@ function generateGraph (datas) {
 	    var chart = new google.visualization.BarChart (window.parent.document.getElementById ('chart_detection'));
 	    chart.draw (data, options);
 	    var titre = window.parent.document.getElementById ('titreMol');
-	    titre.innerHTML = "Nombre de quantifications de la zone d'étude";
+	    titre.innerHTML = "Nombre de quantifications de la zone d'\351tude";
 	});
     }
           
