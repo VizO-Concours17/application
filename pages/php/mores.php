@@ -17,11 +17,12 @@ $x2 = $_GET["x2"];
 $y2 = $_GET["y2"];
 
 $inter = "SELECT CD_PARAMETRE, SUM(NBQUANTIF) Somme from table_2_p where X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2; 
+
 if (array_key_exists ('masse', $_GET)) {
     $inter .= ' and (';
     for ($i = 0; $i < count ($_GET['masse']); $i++) {
-        $inter .= 'CdMasseDEa = ' . "'" . $_GET['masse'][$i] . "'";
-        if ($i < count ($_GET['masse']) - 1) $requete .= ' or ';
+        $inter .= 'CdMasseDEa = ' . "'\"" . $_GET['masse'][$i] . "\"'";
+        if ($i < count ($_GET['masse']) - 1) $inter .= ' or ';
     }
     $inter .= ')';
 }

@@ -112,11 +112,7 @@ function resizeMap () {
 }
 
 
-
-/**
-   Retaille le rendu 3d quand on change la taille de la fenetre
-*/
-function resize3dContent () {
+function set3dContent () {
     var viewer = document.createElement ("iframe");
     viewer.id = "viewer";
     
@@ -144,6 +140,14 @@ function resize3dContent () {
     viewer.setAttribute('style', 'border:none');
 
 }
+
+function resize3dContent () {
+    var viewer = document.getElementById ("viewer");
+    viewer.width = '100%';
+    viewer.height = '100%';    
+}
+
+
 
 /**
    Ajoute une masse d'eau dans le menu
@@ -182,8 +186,8 @@ function addPest (name) {
    Met a jour les événements
 */
 function setDisplay (coords) {
-    $(document).ready(resize3dContent);
-    window.onresize = resize3dContent;    
+    $(document).ready(set3dContent);
+   // window.onresize = resize3dContent;    
     var location = window.location.href;
     location = location.substr (0, location.lastIndexOf ('/'));
     coords = "x1=" + coords [0] + "&" +
@@ -244,7 +248,7 @@ function setDisplay (coords) {
     
     $('.subblockmenu').css('visibility', 'visible');
   
-    resize3dContent();
+    set3dContent();
 }
 
 

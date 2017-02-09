@@ -10,29 +10,29 @@ $pest = $_GET['pest'];
 
 
 function toNom ($name) {
-    if ('A') return	'Acaricide';
-    if ('B') return	'Biocide';
-    if ('BF') return	'Biocide, Fongicide';
-    if ('F') return 	'Fongicide';
-    if ('FA') return 	'Fongicide, Acaricide';
-    if ('FHM') return	'Fongicide, Herbicide, Mollusticide';
-    if ('FN') return	'Fongicide, Nématicide';
-    if ('H') return 	'Herbicide';
-    if ('I') return	'Insecticide';
-    if ('IA') return	'Insecticide, Acaricide';
-    if ('IAFH') return  'Insecticide, Acaricide, Fongicide, Herbicide';
-    if ('IAM') return	'Insecticide, Acaricide, Mollusticide';
-    if ('IAN') return	'Insecticide, Acaricide, Nématicide';
-    if('IM') return 	'Insecticide, Mollusticide';
-    if ('IN') return 	'Insecticide, Nématicide';
-    if ('Ireg') return 	'Insecticide, Régulateur de croissance';
-    if ('N') return 	'Nématicide';
-    if ('R') return 	'Rodenticide';
-    if ('Reg') return 	'Régulateur de croissance';
-    if ('RepO') return	'Répulsif';
-    if ('Ro') return 	'Rodenticide';
-    if ('HFNI') return	'Herbicide, Fongicide, Nématicide, Insecticide';
-    if ('HG') return 	'Herbicide, Graminicide';
+    if ($name == 'A' || $name == '"A"') return	'Acaricide';
+    if ($name == 'B' || $name == '"B"') return	'Biocide';
+    if ($name == 'BF' || $name == '"BF"') return	'Biocide, Fongicide';
+    if ($name == 'F' || $name == '"F"') return 	'Fongicide';
+    if ($name == 'FA' || $name == '"FA"') return 	'Fongicide, Acaricide';
+    if ($name == 'FHM' || $name == '"FHM"') return	'Fongicide, Herbicide, Mollusticide';
+    if ($name == 'FN' || $name == '"FN"') return	'Fongicide, Nématicide';
+    if ($name == 'H' || $name == '"H"') return 	'Herbicide';
+    if ($name == 'I' || $name == '"I"') return	'Insecticide';
+    if ($name == 'IA' || $name == '"IA"') return	'Insecticide, Acaricide';
+    if ($name == 'IAFH' || $name == '"IAFH"') return  'Insecticide, Acaricide, Fongicide, Herbicide';
+    if ($name == 'IAM' || $name == '"IAM"') return	'Insecticide, Acaricide, Mollusticide';
+    if ($name == 'IAN' || $name == '"IAN"') return	'Insecticide, Acaricide, Nématicide';
+    if($name == 'IM' || $name == '"IM"') return 	'Insecticide, Mollusticide';
+    if ($name == 'IN' || $name == '"IN"') return 	'Insecticide, Nématicide';
+    if ($name == 'Ireg' || $name == '"Ireg"') return 	'Insecticide, Régulateur de croissance';
+    if ($name == 'N' || $name == '"N"') return 	'Nématicide';
+    if ($name == 'R' || $name == '"R"') return 	'Rodenticide';
+    if ($name == 'Reg' || $name == '"Reg"') return 	'Régulateur de croissance';
+    if ($name == 'RepO' || $name == '"RepO"') return	'Répulsif';
+    if ($name == 'Ro' || $name == '"Ro"') return 	'Rodenticide';
+    if ($name == 'HFNI' || $name == '"HFNI"') return	'Herbicide, Fongicide, Nématicide, Insecticide';
+    if ($name == 'HG' || $name == '"HG"') return 	'Herbicide, Graminicide';
     return '';
 }
 
@@ -42,6 +42,7 @@ $rep = $dbh->query ($requete);
 $result = array ();
 
 while ($donnee = $rep->fetch ()) {
+
     $result = array ('nom' => $donnee['LB_PARAMETRE'],
 		     'famille' => $donnee['CODE_FAMILLE'],
 		     'fonction' => utf8_encode (toNom ($donnee['CODE_FONCTION'])),

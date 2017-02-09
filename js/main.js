@@ -165,12 +165,21 @@ function formOk (callback) {
 	callback (data);
     });    
 
-    $("#info_pestMore", window.parent.document).css ('display', 'block');
-    var info = window.parent.document.getElementById ('info_pestMore');
-    info.innerHTML = "Chargement des informations des mol\351cules les plus quantifi\351es";
+    var info = window.parent.document.getElementById ('info_molecule');
+    info.innerHTML = 'Cliquez sur un puits pour afficher ses informations';
+    var puit = window.parent.document.getElementById ('infoPuitList');
+    while (puit.children.length > 0) puit.removeChild (puit.children [0]);	
+    $('#info_molecule', window.parent.document).css('display', 'block');
+    $('#chart_molecule', window.parent.document).css('display', 'none');
+    
+    console.log (plist);
     if (plist.value == -1 || plist.value == -2) {
+	$("#info_pestMore", window.parent.document).css ('display', 'block');
+	var info = window.parent.document.getElementById ('info_pestMore');
+	info.innerHTML = "Chargement des informations des mol\351cules les plus quantifi\351es";
+	console.log (location + "/php/mores.php?" + coords + masse);
 	$.ajax ({
-	    url: location + "/php/mores.php?" + coords
+	    url: location + "/php/mores.php?" + coords + masse
 	}).done (function (data) {
 	    data = $.parseJSON (data);
 	    $("#info_pestMore", window.parent.document).css ('display', 'none');
@@ -195,14 +204,19 @@ function formOk (callback) {
 
 /**
    Fonction qui va appeler les informations de la base pour connaitre les differents points.
-   TODO, pour le moment on fait au hasard
-   Cette fonction devra aussi récuperer les informations de masse d'eau, params...
 */
 function fillPoints (callback) {
     var location = window.location.href;
     location = location.substr (0, location.lastIndexOf ('/'));
     var coords = window.parent.document.getElementById ('3d-coords').innerHTML.replace (/&amp;/g, '&');
-
+    
+    var info = window.parent.document.getElementById ('info_molecule');
+    info.innerHTML = 'Cliquez sur un puits pour afficher ses informations';
+    var puit = window.parent.document.getElementById ('infoPuitList');
+    while (puit.children.length > 0) puit.removeChild (puit.children [0]);	
+    $('#info_molecule', window.parent.document).css('display', 'block');
+    $('#chart_molecule', window.parent.document).css('display', 'none');
+    console.log (location + "/php/criteres.php?" + coords + "&pest=-2");
     $.ajax ({
 	url: location + "/php/criteres.php?" + coords + "&pest=-2"
     }).done (function (data) {
@@ -336,6 +350,40 @@ function computeViewMatrix (cam) {
 }
 
 
+function updateRendererSizes () {
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    labelRenderer.setSize( window.innerWidth, window.innerHeight );
+    aspect = window.innerWidth / window.innerHeight;
+    orCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+    orCamera.position.z = 1500;
+    orCamera.position.y = -500;
+    orCamera.lookAt (new THREE.Vector3 (0, 0, 0));
+    computeViewMatrix (orCamera);
+    
+    if (!camera.isOrthographicCamera) {
+	var position = camera.position;
+	var saveZoom = camera.zoom;
+	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+	camera.position.copy (position);
+	camera.saveZoom = saveZoom;
+	camera.zoom = 1;
+	camera.lookAt (target);
+	computeViewMatrix (camera);
+    } else {
+	var position = camera.position;
+	    var savedZoom = camera.saveZoom;
+	camera = new THREE.OrthographicCamera (1000 *aspect / -2, 1000 *aspect/ 2,
+					       1000 / 2, 1000/ -2,
+					       -5000, 10000);
+	camera.position.copy (position);
+	camera.lookAt (target);
+	if (savedZoom)
+	    camera.zoom = savedZoom;
+	computeViewMatrix (camera);
+	camera.updateProjectionMatrix ();
+    }
+}
+
 
 /**
    Initialise le contexte, affiche la carte, la grille et genere la scene.
@@ -403,7 +451,9 @@ function createBasicRender () {
     renderer.domElement.addEventListener ("mousemove", pick, false);
     renderer.domElement.addEventListener ("mousemove", pickCube, false);
     renderer.domElement.addEventListener ("click", pickCubeClick, false);
-    renderer.domElement.addEventListener ("click", onPick, false);
+    renderer.domElement.addEventListener ("click", onPick, false);    
+    window.addEventListener( 'resize', updateRendererSizes, false );
+    
     renderer.autoClear = false;
     
     labelRenderer = new THREE.CSS2DRenderer ();
@@ -447,6 +497,7 @@ function createBasicRender () {
 
     var transparence = (function () {
 	mapMaterial.opacity = radiusController.Transparence;
+	helper.material.opacity = radiusController.Transparence;
     });
 
     gui.add (radiusController, "Distance", Math.ceil (10), Math.ceil (2.0 * radius), Math.ceil (radius / 100.0)).onChange (distChange);
@@ -695,11 +746,11 @@ function pick (event) {
 	    text.style.color = 'rgb(10,10,0)';
 	    text.style.backgroundColor = '#ffffff';
 	    text.style.border = '2px solid black';
-	    text.textContent = box.name;
-
+	    text.style.textAlign = "center";
+	    text.innerHTML = box.name;
+	    
 	    var label = new THREE.CSS2DObject (text);
 	    label.position.copy (box.position);
-	    //label.position.y += 5;
 	    highlits.push (label);
 	    scene.add (label);
 
@@ -708,11 +759,12 @@ function pick (event) {
 	    text2.style.color = 'rgb(10,10,0)';
 	    text2.style.backgroundColor = '#ffffff';
 	    text2.style.border = '2px solid black';
-	    text2.textContent = sphere.name;
+	    text2.innerHTML = sphere.name;
+	    text2.style.textAlign = "center";
 	    
 	    var label2 = new THREE.CSS2DObject (text2);
 	    label2.position.copy (sphere.position);
-	    label2.position.y -= 55;
+	    label2.position.y -= 60;
 	    highlits.push (label2);
 	    scene.add (label2);
 	    
@@ -948,7 +1000,7 @@ function generateGraph (datas) {
 		
 	google.charts.load('current', { packages: ['corechart', 'line', 'bar'] });
 	google.charts.setOnLoadCallback(function () {	
-	    quantif = [['Mol\351cule', 'Quantification', ]];
+	    quantif = [['Mol\351cule', '']];
 	    for (var i in datas) {
 		quantif.push([datas[i]['lb'], parseInt (datas[i]['quantif'])] );
 	    }
@@ -956,6 +1008,7 @@ function generateGraph (datas) {
 	    var options = {
 		title: 'Mol\351cules les plus souvent quantifi\351es',
 		chartArea: { width: '50%' },
+		legend : 'none',
 		hAxis: {
 		    title: 'Nombre de quantifications',
 		    minValue: 0
