@@ -747,7 +747,7 @@ function pick (event) {
 	    text.style.backgroundColor = '#ffffff';
 	    text.style.border = '2px solid black';
 	    text.style.textAlign = "center";
-	    text.innerHTML = box.name;
+	    text.innerHTML = box.name.replace (/"/gi, '');
 	    
 	    var label = new THREE.CSS2DObject (text);
 	    label.position.copy (box.position);
