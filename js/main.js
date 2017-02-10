@@ -852,9 +852,7 @@ function generateGraphPuit (datas) {
     var span3 = document.createElement ('span');
     span3.className = "pull-right badge bg-blue";
     li3.innerHTML = 'Masse d\'eau';
-    if (datas['masse_eau'][0] == '"')
-	span3.innerHTML = datas['masse_eau'].substr (1, datas['masse_eau'].length - 2);
-    else span3.innerHTML = datas['masse_eau'];	
+    span3.innerHTML = datas['masse_eau'].replace (/"/gi, '').replace ("é", "\351");	
     li3.appendChild (span3);
     puit.appendChild (li3);
 
@@ -986,7 +984,7 @@ function generatePest (datas) {
 	var span7 = document.createElement ('span');
 	span7.className = "pull-right badge bg-blue";
 	li7.innerHTML = 'Mol\351cule parent';
-	span7.innerHTML = datas['parent_nom'];
+	span7.innerHTML = datas['parent_nom'].replace (/"/gi, '');
 	li7.appendChild (span7);
 	mol.appendChild (li7);
     }

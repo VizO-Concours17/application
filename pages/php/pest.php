@@ -52,7 +52,7 @@ while ($donnee = $rep->fetch ()) {
 		     'normeDce' => $donnee['NORME_DCE']);
 
     if ($donnee['METABOLITE'] == 'oui' || $donnee['METABOLITE'] == '"oui"') {
-	$rep2 = $dbh->query ('select * from liste_param where CD_PARAMETRE=' . $donnee['PARENT']);
+	$rep2 = $dbh->query ('select * from liste_param where CD_PARAMETRE=\'' . $donnee['PARENT'] . "' or CD_PARAMETRE='\"" . $donnee['PARENT'] . '"\'');
 	$result['parent'] = $donnee['PARENT'];
 	$donnee2 = $rep2->fetch ();
 	$result['parent_nom'] = $donnee2['LB_PARAMETRE'];
