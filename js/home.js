@@ -165,8 +165,8 @@ function addMasse (name) {
     input.setAttribute ('checked', 'true');
     
     label.appendChild (input);
-    label.innerHTML += "  Masse d'eau " + name;
-    label.setAttribute('name', name);
+    label.innerHTML += "  Masse d'eau " + name.replace(/"/gi, '');
+    label.setAttribute('name', name.replace(/"/gi, ''));
     list.appendChild (li);
 }
 
@@ -195,7 +195,7 @@ function setDisplay (coords) {
 	"x2=" + coords [2] + "&" +
 	"y2=" + coords [3];
     document.getElementById ('3d-coords').innerHTML = coords;
-	     
+    console.log (location + "/pages/php/fillMenu.php?" + coords);
     //TODO : Charger les données du filtre puis afficher le filtre    
     $.ajax ({
 	url: location + "/pages/php/fillMenu.php?" + coords  

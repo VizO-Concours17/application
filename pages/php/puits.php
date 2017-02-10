@@ -24,7 +24,7 @@ if ($pest < 0) {
             $rep2 = $dbh->query ('SELECT NomMasseDE FROM liste_made WHERE CdMasseDEa=\'' . $donnee['CdMasseDEa'] . "'");
             $donnee2 = $rep2->fetch ();
             if (!$donnee2) $infos['masse_eau'] = $donnee['CdMasseDEa'];
-            else $infos['masse_eau']  = utf8_encode ($donnee2['NomMasseDE']);
+            else $infos['masse_eau']  = $donnee2['NomMasseDE'];
             if ($pest == -1) $infos['criteresLabel'] = 'Concentration maximale';
             else $infos['criteresLabel'] = 'Concentration moyenne';            
         }
@@ -58,7 +58,7 @@ if ($pest < 0) {
             $donnee2 = $rep2->fetch ();
 	    
             if (!$donnee2) $infos['masse_eau'] = $donnee['CdMasseDEa'];
-            else $infos['masse_eau']  = utf8_encode ($donnee2['NomMasseDE']);
+            else $infos['masse_eau']  = $donnee2['NomMasseDE'];
 	    
             $infos['criteresLabel'] = $donnee['LB_PARAMETRE'];
 	    $infos['nb_year'] = 0;

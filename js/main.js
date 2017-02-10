@@ -95,19 +95,21 @@ function init() {
 	    range.setAttribute ('type', 'text');
 	    range.setAttribute ('data-slider-selection', 'none');
 	    range.setAttribute ('id', 'range');
+	    range.setAttribute ('data-value', '');
 	    var label = window.parent.document.createElement ('label');
 	    label.id = 'rangeText';
 	    
 	    rangeDiv.appendChild (label);
 	    rangeDiv.appendChild (range);
 	    
-	    range.setAttribute ('value', '0');	    
+	    range.defaultValue = '' + years.length - 1 + '';
+	    console.log ($(range));
 	    range.onchange = rangeChanged;
 	}
 	var legende = window.parent.document.getElementById ('legende');
 	console.log (legende);
 	legende.style.display = 'block';
-	window.parent.reloadStyle ();
+	window.parent.reloadStyle ();	
 	$('#rangeText', window.parent.document).text ("Ann\351e des donn\351es");
 	
     };
@@ -1002,7 +1004,7 @@ function generateGraph (datas) {
 	google.charts.setOnLoadCallback(function () {	
 	    quantif = [['Mol\351cule', '']];
 	    for (var i in datas) {
-		quantif.push([datas[i]['lb'], parseInt (datas[i]['quantif'])] );
+		quantif.push([datas[i]['lb'].replace(/"/gi, ''), parseInt (datas[i]['quantif'])] );
 	    }
 	    
 	    var options = {

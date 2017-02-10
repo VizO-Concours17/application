@@ -9,7 +9,7 @@ $y1 = $_GET["y1"];
 $x2 = $_GET["x2"];
 $y2 = $_GET["y2"];
 
-$requete = "SELECT * from table_1_pt where X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2;
+$requete = "SELECT CdMasseDEa from table_1_pt where X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2;
 
 $rep = $dbh->query ($requete);
 
@@ -22,17 +22,21 @@ while ($donnee = $rep->fetch ()) {
     }    
 }
 
-$requete = "SELECT * from table_2_p INNER JOIN liste_param on table_2_p.CD_PARAMETRE=liste_param.CD_PARAMETRE where  X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2 . " LIMIT 50";
+$inter = "SELECT DISTINCT CD_PARAMETRE CD from table_2_p where X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2;
+
+$requete = "SELECT liste_param.LB_PARAMETRE, CD from liste_param INNER JOIN (" . $inter . ") as V ON CD=liste_param.CD_PARAMETRE";
+
+
 $rep = $dbh->query ($requete);
 
 $add = array ();
 
 while ($donnee = $rep->fetch ()) {
-    if (!in_array ($donnee ['CD_PARAMETRE'], $add)) {
-	array_push ($infos['pest'], array ('cd' => $donnee['CD_PARAMETRE'],
+    if (!in_array ($donnee ['CD'], $add)) {
+	array_push ($infos['pest'], array ('cd' => $donnee['CD'],
 					   'lb' => $donnee ['LB_PARAMETRE']));
 	
-	array_push ($add, $donnee['CD_PARAMETRE']);
+	array_push ($add, $donnee['CD']);
     }
 }
 
@@ -40,6 +44,7 @@ while ($donnee = $rep->fetch ()) {
 
 
 echo json_encode ($infos);
+
 
 
 ?>

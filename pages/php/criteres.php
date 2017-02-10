@@ -36,7 +36,7 @@ function getFromTotal () {
     if (array_key_exists ('masse', $_GET)) {
         $requete .= ' and (';
         for ($i = 0; $i < count ($_GET['masse']); $i++) {
-            $requete .= 'CdMasseDEa = ' . "'" . $_GET['masse'][$i] . "'";
+            $requete .= 'CdMasseDEa = ' . "'\"" . $_GET['masse'][$i] . "\"'";
             if ($i < count ($_GET['masse']) - 1) $requete .= ' or ';
         }
         $requete .= ')';

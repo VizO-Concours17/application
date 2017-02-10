@@ -33,12 +33,13 @@ $rep = $dbh->query ($requete);
 
 
 $point['more'] = array ();
-while ($donnee = $rep->fetch ()) {    
-    $rep2 = $dbh->query ("SELECT LB_PARAMETRE from liste_param where CD_PARAMETRE=" . $donnee['CD_PARAMETRE']);
+while ($donnee = $rep->fetch ()) {
+
+    $rep2 = $dbh->query ("SELECT LB_PARAMETRE from liste_param where CD_PARAMETRE='" . $donnee['CD_PARAMETRE'] . "' or CD_PARAMETRE='\"" . $donnee['CD_PARAMETRE'] . "\"'");
     $quant = $donnee['Somme'];
     if ($rep2) {
 	while ($donnee2 = $rep2->fetch ()) {
-	    $name = utf8_encode ($donnee2['LB_PARAMETRE']);
+	    $name = $donnee2['LB_PARAMETRE'];
 	    array_push ($point['more'], array ('lb' => $name, 'quantif' => $quant));		
 	}
     }
