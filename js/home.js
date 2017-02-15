@@ -37,6 +37,7 @@ function setMapSize () {
 
 	var buttonOk = document.getElementById('map-ok');
 	
+	// Quand on clique sur le bouton de selection d'emprise, on initialise le rendu 3D.
 	buttonOk.addEventListener ('click', function (e) {
 	    map.once ('precompose', function (event) {
 		var canvas = event.context.canvas;
@@ -64,8 +65,9 @@ function setMapSize () {
 	    setDisplay (coords);
 	}, false);
 
-	var search = document.getElementById('geoSearch');
 	
+	// Champ de selection de la zone geographique.
+	var search = document.getElementById('geoSearch');	
 	function searchLocation () {
 	    var value = document.getElementById('geoSearchValue').value;
 	    $.ajax ({
@@ -111,7 +113,9 @@ function resizeMap () {
 
 }
 
-
+/**
+   On ouvre le systeme de rendu 3D.
+*/
 function set3dContent () {
     var viewer = document.createElement ("iframe");
     viewer.id = "viewer";
@@ -141,6 +145,9 @@ function set3dContent () {
 
 }
 
+/**
+   On change la taille du rendu quand le client retaille l'ecran.
+*/
 function resize3dContent () {
     var viewer = document.getElementById ("viewer");
     viewer.width = '100%';
@@ -170,6 +177,9 @@ function addMasse (name) {
     list.appendChild (li);
 }
 
+/**
+   Ajoute un pesticide dans la liste des pesticides.
+ */
 function addPest (name) {
     var list = document.getElementById ('pestList');
     var option = document.createElement ('option');
@@ -182,21 +192,24 @@ function addPest (name) {
 
 
 /**
-   On affiche le rendu 3d.
-   Met a jour les événements
+   On ouvre le rendu 3D et on charge les informations du menu des parametres.  
 */
 function setDisplay (coords) {
     $(document).ready(set3dContent);
    // window.onresize = resize3dContent;    
     var location = window.location.href;
     location = location.substr (0, location.lastIndexOf ('/'));
+   
     coords = "x1=" + coords [0] + "&" +
 	"y1=" + coords [1] + "&" +
 	"x2=" + coords [2] + "&" +
 	"y2=" + coords [3];
+   
+    // Ecriture des coordonnees dans la page HTML pour qu'elle soit recupere ulterieurement par le rendu
     document.getElementById ('3d-coords').innerHTML = coords;
     console.log (location + "/pages/php/fillMenu.php?" + coords);
-    //TODO : Charger les données du filtre puis afficher le filtre    
+
+    // Requete au serveur pour recuperer la liste des pesticides et des masses d'eau.
     $.ajax ({
 	url: location + "/pages/php/fillMenu.php?" + coords  
     }).done (function (data) {
@@ -221,9 +234,6 @@ function setDisplay (coords) {
 	opt1.innerHTML = 'Pesticides totaux - concentration maximale';
 	plist.appendChild (opt1);
 
-
-	
-	console.log (data);
 	for (i = 0; i < data["masse"].length ; i++) {
 	    addMasse (data['masse'] [i]);
 	}
@@ -243,11 +253,12 @@ function setDisplay (coords) {
             radioClass: 'iradio_minimal-blue'
         });
 
-	
+	$('.subblockmenu').css('visibility', 'visible');	
     });
     
-    $('.subblockmenu').css('visibility', 'visible');
+
   
+    // Ouverture de la page 3D.
     set3dContent();
 }
 

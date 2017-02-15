@@ -6,10 +6,11 @@ $content = (array) json_decode (fread ($configFile, filesize('config.json')));
 
 $user = $content['user'];//"root";
 $pass = $content['pass'];//"root";
+$url = $content['url'];
 
 fclose ($configFile);
 
-$dbh =	 new PDO('mysql:host=localhost;dbname=vizo', $user, $pass);
+$dbh =	 new PDO($url, $user, $pass);
 
 
 // TODO pesticide totaux moy, et max

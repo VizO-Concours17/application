@@ -1,61 +1,29 @@
 
-
+// Objet de Three.js permettant l'affichage
 var scene, camera, renderer, labelRenderer;
+
+// Donnees pour gerer le mouvement de la camera
 var ancx = -1, ancy = -1, start;
 var phi = 0, teta = 60, target;
 var precise = .3;
-var raycaster, labels;
+
+// element permettant le picking.
+var raycaster, labels; // le tableau qui contient les objets de type label que l'on affiche par dessus la vue 3D.
 
 
-var meshPerYear, currentYear;
-var years;
-var aspect;
+// Tableau contenant les objets geometriques.
+var meshPerYear, currentYear; // index courant dans le tableau des objets.
+
+var years; // les annees dont on affiche les donnees.
+var aspect; // l'aspect de l'ecran (3/4, 16/9, ...)
 
 var orScene, orCube, orCamera;
 
-var points;
-var donnee;
-
-
-/**
-   15h30 20 janvier
-
-   Pour les couleurs : 
-
-   - Pas recherchée : pas de boule
-   - Cherchée non-quantifiée : 
-
-   --- valeur ...
-   |
-   |
-   --- limite de quantification : 0.1 ug / L
-   |
-   |
-   |
-   --- limite de détéction : 0.05 ug / L  
-
-   
-   Code couleur : {pas de quantif : blanc, < 0.1 : jaune, 0.1 < x < 0.5 : orange, 0.5 < x < 5 : rouge, > 5 : rouge/noir}
-*/
-
-/**
-   cylindre suivi d'un polygone (par défaut une sphere)
-   | label top
-   | label bottom
-   | x
-   | y
-   | z 
-   | couleur de ligne
-   | epaisseur ligne
-   | bottom color
-   | bottom radius
-   | bottom shape
-*/
-
+/*var points;
+var donnee;*/
 
 init ();
 animate ();
-
 
 
 /**
@@ -63,16 +31,22 @@ animate ();
 */
 function init() {
 
+    // Creation du contexte Three.js, (camera, scene, ...)
     createBasicRender ();
+
+    // Creation du raycaster qui va permettre le picking
     createPickingDatas ();
+
+    // Creation du context Three.js qui va gerer le cube d'orientation
     createOrientationRender ();
     
+    // Calcule des matrices de la camera
     computeViewMatrix ();
 
-    
+    // Fonction callback appele apres chaque changement des donnees dans la zone 3D.
     function arrangeDatas (datas) {
 	createDatas (datas);	
-	currentYear = meshPerYear.length - 1;
+	currentYear = years[years.length - 1];
 	
 	for (var i = 0; i < meshPerYear [currentYear].length; i++) {
 	    scene.add (meshPerYear [currentYear][i]);
@@ -85,17 +59,17 @@ function init() {
 	    var tabs = [];
 	    for (var i in years) tabs.push (i);
 	    
-	    
+	    // creation du slider des annees
 	    var range = window.parent.document.createElement ('input');
 	    range.className = 'slider';
 	    range.setAttribute ('data-slider-orientation', 'horizontal');
-	    range.setAttribute ('data-slider-ticks', '[' + tabs.toString () + ']');
-	    range.setAttribute ('data-slider-ticks-labels', '[' + years.toString () + ']');
+	    range.setAttribute ('data-slider-ticks', '[' + tabs.toString () + ']'); // valeur de chaque label
+	    range.setAttribute ('data-slider-ticks-labels', '[' + years.toString () + ']'); // label en dessous du slider
 	    range.setAttribute ('data-slider-tooltip', 'hide');
 	    range.setAttribute ('type', 'text');
 	    range.setAttribute ('data-slider-selection', 'none');
 	    range.setAttribute ('id', 'range');
-	    range.setAttribute ('data-slider-value', years.length - 1);
+	    range.setAttribute ('data-slider-value', years.length - 1); //valeur par defaut
 	    var label = window.parent.document.createElement ('label');
 	    label.id = 'rangeText';
 	    
@@ -104,6 +78,8 @@ function init() {
 	    
 	    range.onchange = rangeChanged;
 	}
+
+	// Affichage de la legende du block 3D.
 	var legende = window.parent.document.getElementById ('legende');
 	console.log (legende);
 	legende.style.display = 'block';
@@ -111,12 +87,14 @@ function init() {
 	$('#rangeText', window.parent.document).text ("Ann\351e des donn\351es");
 	
     };
-
-    fillPoints (arrangeDatas);
+    
+    // Appel � la requete ajax qui va remplir les tableaux de donn�es.
+    fillPoints (arrangeDatas); // arrangeDatas est le callBack
     
     var buttonValide = window.parent.document.getElementById ('form-ok');
     if (buttonValide != null) {
 	buttonValide.addEventListener ('click', function () {
+	    // quand on clique sur le bouton de validation de formulaire, on relance l'appel au donnees.
 	    formOk (arrangeDatas);
 	});
     }
@@ -129,25 +107,30 @@ function init() {
 function rangeChanged () {
     var range = window.parent.document.getElementById ('range');
     var y1 = currentYear;
-    currentYear = range.value;
+    currentYear = years[range.value]; // nouvelle annee
     changeYear (y1, currentYear);
 }
 
 
+/**
+   Fonction appele lors d'un clique sur le bouton de validation de selection de parametre.
+ */
 function formOk (callback) {
     // On supprime les donnees de la scene
-    if (meshPerYear.length > 0) {
-	for (var i = 0; i < meshPerYear [currentYear].length; i++)
-	    scene.remove (meshPerYear [currentYear][i]);
+    for (var i = 0; i < meshPerYear [currentYear].length; i++)
+	scene.remove (meshPerYear [currentYear][i]);
 	
-	meshPerYear = [];
-    }
+    meshPerYear = [];    
     
+    // emplacement du serveur qui heberge la page
     var location = window.location.href;
     location = location.substr (0, location.lastIndexOf ('/'));
 
+    // recuperation des coordonnees de l'emprise
     var coords = window.parent.document.getElementById ('3d-coords').innerHTML.replace (/&amp;/g, '&');
     var masse = "";
+
+    // remplissage des parametres de masse d'eau
     var list = window.parent.document.getElementById ('masseList');
     for (var ch = 0 ; ch <  list.children.length; ch++) {
 	var div = list.children [ch].children [0].children [0];
@@ -156,15 +139,18 @@ function formOk (callback) {
 	}
     }
 
+    // Remplissage du parametre de selection de pesticide.
     var plist = window.parent.document.getElementById ('pestList');
-    console.log (location + "/php/criteres.php?" + coords + masse + "&pest=" + plist.value);
+    
+    // Appel ajax au serveur php.
     $.ajax ({
 	url: location + "/php/criteres.php?" + coords + masse + "&pest=" + parseInt (plist.value)
     }).done (function (data) {
 	data = $.parseJSON (data);
-	callback (data);
+	callback (data); // on appele le callback (arrangeData).
     });    
 
+    //Affichage des labels de chargement des graphiques.
     var info = window.parent.document.getElementById ('info_molecule');
     info.innerHTML = 'Cliquez sur un puits pour afficher ses informations';
     var puit = window.parent.document.getElementById ('infoPuitList');
@@ -172,20 +158,21 @@ function formOk (callback) {
     $('#info_molecule', window.parent.document).css('display', 'block');
     $('#chart_molecule', window.parent.document).css('display', 'none');
     
-    console.log (plist);
+    // Si on a selectionner max, ou moy on charge les informations de maximum quantifie dans la zone
     if (plist.value == -1 || plist.value == -2) {
 	$("#info_pestMore", window.parent.document).css ('display', 'block');
 	var info = window.parent.document.getElementById ('info_pestMore');
 	info.innerHTML = "Chargement des informations des mol\351cules les plus quantifi\351es";
-	console.log (location + "/php/mores.php?" + coords + masse);
+	
 	$.ajax ({
 	    url: location + "/php/mores.php?" + coords + masse
 	}).done (function (data) {
 	    data = $.parseJSON (data);
 	    $("#info_pestMore", window.parent.document).css ('display', 'none');
-	    generateGraph (data['more']);
+	    generateGraph (data['more']); // generation du graph de maximum quantifie
 	});
     } else {
+	// sinon on recherche les informations de la molecule.
 	$("#info_pestMore", window.parent.document).css ('display', 'block');
 	var info = window.parent.document.getElementById ('info_pestMore');
 	info.innerHTML = "Chargement des informations de la mol\351cule";
@@ -203,30 +190,37 @@ function formOk (callback) {
 }
 
 /**
-   Fonction qui va appeler les informations de la base pour connaitre les differents points.
+   Fonction d'appel au serveur pour connaitre les differents puits present dans la zone.
 */
 function fillPoints (callback) {
     var location = window.location.href;
     location = location.substr (0, location.lastIndexOf ('/'));
+
+    // recuperation des coordonnees de la zone d'emprise.
     var coords = window.parent.document.getElementById ('3d-coords').innerHTML.replace (/&amp;/g, '&');
     
+    // Affichage des label de chargements des encarts.
     var info = window.parent.document.getElementById ('info_molecule');
     info.innerHTML = 'Cliquez sur un puits pour afficher ses informations';
     var puit = window.parent.document.getElementById ('infoPuitList');
     while (puit.children.length > 0) puit.removeChild (puit.children [0]);	
     $('#info_molecule', window.parent.document).css('display', 'block');
     $('#chart_molecule', window.parent.document).css('display', 'none');
-    console.log (location + "/php/criteres.php?" + coords + "&pest=-2");
+
+    // Appel ajax pour recuperer les differents puits.
     $.ajax ({
 	url: location + "/php/criteres.php?" + coords + "&pest=-2"
     }).done (function (data) {
 	data = $.parseJSON (data);
-	callback (data);
+	callback (data); 
     });
 
+
+    // Par defaut, on affiche la concentration moyenne du coup, on recupere les max quantifie
     $("#info_pestMore", window.parent.document).css ('display', 'block');
     var info = window.parent.document.getElementById ('info_pestMore');
     info.innerHTML = "Chargement des informations des mol\351cules les plus quantifi\351es";
+
     $.ajax ({
 	url: location + "/php/mores.php?" + coords
     }).done (function (data) {
@@ -256,14 +250,17 @@ function createDatas (datas) {
 	    }
 	    i++;
 	}
-	meshPerYear.push (total);
+	
+	meshPerYear['"' + key + '"'] = total;
     }    
+
+    years.sort ();
 }
 
 /**
    Le range a changer, on change les mesh que l'on affiche
 */
-function changeYear (y1, y2) {
+function changeYear (y1, y2) {	
     for (var i = 0; i < meshPerYear [y1].length; i++)
 	scene.remove (meshPerYear [y1][i]);
     for (var i = 0; i < meshPerYear [y2].length; i++)
@@ -271,7 +268,7 @@ function changeYear (y1, y2) {
 }
 
 /**
-   On cree les mesh associe a un point
+   On cree les mesh associe a un point, box, cylindre, sphere.
 */
 function createBoxe (data) {
     var box = new THREE.BoxGeometry (data['lineWidth'] * 4, 5, data['lineWidth'] * 4);
@@ -316,8 +313,8 @@ function cameraUpdate (event) {
 	if (ancx != -1) {
 	    var posx = ancx - x;
 	    var posy = ancy - y;
-	    phi = (phi + Math.trunc (precise * posx)) % 360;
-	    teta = (teta - Math.trunc(precise * posy)) % 360;
+	    phi = (phi + Math.ceil (precise * posx)) % 360;
+	    teta = (teta - Math.ceil (precise * posy)) % 360;
 	    if (teta < 0) teta = 0;
 	    if (teta > 180) teta = 180;
 	}
@@ -349,7 +346,9 @@ function computeViewMatrix (cam) {
     cam.updateMatrixWorld ();
 }
 
-
+/**
+   Changement de la taille des elements de Three.js, lorsque l'utilisateur retaille sa fenetre.
+ */
 function updateRendererSizes () {
     renderer.setSize( window.innerWidth, window.innerHeight );
     labelRenderer.setSize( window.innerWidth, window.innerHeight );
@@ -389,28 +388,30 @@ function updateRendererSizes () {
    Initialise le contexte, affiche la carte, la grille et genere la scene.
 */
 function createBasicRender () {
-    scene = new THREE.Scene();    
+    scene = new THREE.Scene();  // scene d'affichage des elements 3D.
 
-    labels = new THREE.Scene ();
+    labels = new THREE.Scene (); // Scene d'affichage des labels.
     
-    scene.add( new THREE.AmbientLight( 0xA0A0A0 ) );
+    scene.add( new THREE.AmbientLight( 0xA0A0A0 ) ); // ajout d'un eclairage ambiant pour qu'on y voit quelque chose.
     
-  
     target = new THREE.Vector3 (0, 0, 0);
+
+    // par defaut la camera est en espace projectif.
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
     aspect = window.innerWidth / window.innerHeight;
     // camera = new THREE.OrthographicCamera (1000 *aspect / -2, 1000 *aspect/ 2,
     // 					   1000 * aspect/ 2, 1000 *aspect/ -2,
     // 					   -5000, 10000);
 
+    // Le monde fait une taille de 1000 * 1000.
     camera.position.z = 1500;
     camera.position.y = -500;
     camera.lookAt (target);
 
-    var light1 = new THREE.PointLight( 0xffffff, 1.5 );
+    var light1 = new THREE.PointLight( 0xffffff, 1.5 ); 
     light1.position.set( 0, 1000, 0 );
 
-    scene.add (light1);
+    scene.add (light1); // Ajout d'un point lumineux pour qu'on voit mieux l'aspect 3D
     
     
     var planeGeometry = new THREE.PlaneGeometry( 2000, 2000 );
@@ -421,7 +422,7 @@ function createBasicRender () {
     var plane = new THREE.Mesh( planeGeometry, planeMaterial );
     plane.position.y = -500;
     plane.receiveShadow = true;
-    scene.add( plane );
+    scene.add( plane ); 
 
     var img = window.parent.document.getElementById ('3d-texture');
     var texture1 = new THREE.Texture (img);
@@ -434,16 +435,16 @@ function createBasicRender () {
     
     map = new THREE.Mesh( planeGeometry, mapMaterial );
     map.position.y = 0;
-    scene.add (map);
+    scene.add (map); // Ajout du plan qui affiche la carte.
     
     var helper = new THREE.GridHelper( 1000, 100 );
     helper.position.y = -500;
     helper.material.opacity = 0.6;
     helper.material.transparent = true;
-    scene.add( helper );
+    scene.add( helper ); // ajout de la grille en bas de la scene.
 
     
-    renderer = new THREE.WebGLRenderer({antialias : true });    
+    renderer = new THREE.WebGLRenderer({antialias : true });    // Creation d'un rendeur, qui va afficher la scene.
     renderer.setClearColor( 0xf0f0f0 );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.shadowMap.enabled = true;
@@ -454,17 +455,17 @@ function createBasicRender () {
     renderer.domElement.addEventListener ("click", onPick, false);    
     window.addEventListener( 'resize', updateRendererSizes, false );
     
-    renderer.autoClear = false;
+    renderer.autoClear = false; 
     
-    labelRenderer = new THREE.CSS2DRenderer ();
+    labelRenderer = new THREE.CSS2DRenderer (); // creation d'un renderer qui va afficher les labels.
     labelRenderer.setSize (window.innerWidth, window.innerHeight);
     labelRenderer.domElement.style.position = 'absolute';
     labelRenderer.domElement.style.top = '0';
     labelRenderer.domElement.style.pointerEvents = 'none';    
     labelRenderer.autoClear = false;
 
-    
-    document.body.appendChild( renderer.domElement );
+    // on ajoute les renderers a la page.
+    document.body.appendChild( renderer.domElement ); 
     document.body.appendChild (labelRenderer.domElement);
     stats = new Stats();
 
@@ -472,14 +473,16 @@ function createBasicRender () {
     var pos = camera.position;
     var radius = Math.abs (pos.distanceTo(target));    
     
-    var gui = new dat.GUI ();
+    // Ajout de l'interface permettant la modification des parametres
+    var gui = new dat.GUI (); 
+
     var radiusController = {
 	Distance: Math.ceil (radius),
 	Transparence: 0.9
     };
 
+    // Quand on change la distance de la camera, on recalcule ses matrices
     var distChange = function () {
-	
 	var radius = radiusController.Distance;
 	var pos = camera.position;
 	pos.x = target.x + radius * Math.sin (teta * Math.PI / 180.0) * Math.sin (phi * Math.PI / 180.0);
@@ -495,6 +498,7 @@ function createBasicRender () {
 	camera.updateMatrixWorld ();
     }
 
+    // Quand on change la transparence.
     var transparence = (function () {
 	mapMaterial.opacity = radiusController.Transparence;
 	helper.material.opacity = radiusController.Transparence;
@@ -503,6 +507,7 @@ function createBasicRender () {
     gui.add (radiusController, "Distance", Math.ceil (10), Math.ceil (2.0 * radius), Math.ceil (radius / 100.0)).onChange (distChange);
     gui.add (radiusController, "Transparence", 0.0, 1.0, 0.01).onChange (transparence);
 
+    // Quand on change le mode de rendu (perspective, plat), on recree une nouvelle camera.
     var mode = {};
     mode.Perspective = true;
     gui.add (mode, 'Perspective').onChange (function () {
@@ -533,7 +538,9 @@ function createBasicRender () {
     
 }
 
-
+/**
+   Creation du cube d'orientation du monde.
+ */
 function createOrientationRender () {
     orScene = new THREE.Scene ();
     orCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -580,6 +587,7 @@ function createOrientationRender () {
     geometry.faceVertexUvs[0][10] = [ nord[0], nord[1], nord[3] ];
     geometry.faceVertexUvs[0][11] = [ nord[1], nord[2], nord[3] ];
     
+    // Texturing du cube.
     var loader = new THREE.TextureLoader ();
     loader.load ('texture/cube/orientation.jpg',
 		 function (texture) {
@@ -587,21 +595,26 @@ function createOrientationRender () {
 		     orCube = new THREE.Mesh (geometry, mat);
 		     orScene.add (orCube);    
 		 });
-        
+
+    // Ajout d'une lumiere ambiante pour voir le cube.
     orScene.add( new THREE.AmbientLight( 0x101010 ) );
 }
 
+/**
+   Creation du raycaster qui permet le picking.
+ */
 function createPickingDatas () {
     raycaster = new THREE.Raycaster ();
 }
 
-
+// Les elements en surbrillance.
 var highlits = [], cubeHighlits = [];
 
-function addToolTip () {
-    
-}
+function addToolTip () {}
 
+/**
+   lorsqu'on passe au dessus du cube, un plan s'affiche sur l'element survole.
+ */
 function pickCube (event) {
     var x = (event.clientX / (window.innerWidth)) * 10 - 1;
     var y = - (event.clientY / (window.innerHeight)) * 10 + 1;
@@ -619,6 +632,7 @@ function pickCube (event) {
 	var plane = new THREE.PlaneGeometry (1100, 1100);
 	var mat = new THREE.MeshBasicMaterial ({color : 0x00ff00, side : THREE.DoubleSide });
 		
+	// Rotation du plan en fonction du cote survole.
 	var face = intersects [0].faceIndex;
 	var position = new THREE.Vector3 (0,0,0);
 	if (face == 0 || face == 1) {
@@ -645,8 +659,9 @@ function pickCube (event) {
 	var mesh = new THREE.Mesh (plane, mat);
 	mesh.position.copy (position);
 	orScene.add (mesh);
-	cubeHighlits.push (mesh);
+	cubeHighlits.push (mesh); // Ajout des elements en surbrillance a la scene.
     } else {
+	// rien de selectionne, on enleve les elements en surbrillance.
 	if (cubeHighlits){
 	    for (var i = 0; i < cubeHighlits.length; i++) {
 		orScene.remove (cubeHighlits [i]);
@@ -656,6 +671,9 @@ function pickCube (event) {
     }
 }
 
+/**
+   Lorsqu'on clique sur une des faces du cube, on bouge la camera.
+ */
 function pickCubeClick (event) {
     var x = (event.clientX / (window.innerWidth)) * 10 - 1;
     var y = - (event.clientY / (window.innerHeight)) * 10 + 1;
@@ -673,6 +691,9 @@ function pickCubeClick (event) {
     }    
 }
 
+/**
+   Mouvement de la camera.
+*/
 function moveEst () {
     phi = 90; teta = 90;
     computeViewMatrix (camera);
@@ -710,78 +731,88 @@ function moveBas () {
 }
 
 
+/**
+   lorsqu'on survolle un puits, on affiche les informations.
+ */
 function pick (event) {
     var x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
     var y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
     var mouse = new THREE.Vector2 (x, y);
     raycaster.setFromCamera (mouse, camera);
-    if (meshPerYear && meshPerYear.length > currentYear) {
-	var intersects = raycaster.intersectObjects (meshPerYear [currentYear]);
-	if (intersects.length > 0) {
-	    
-            if ( highlits ) {
-		for (var i = 0; i < highlits.length; i++) {
-		    scene.remove (highlits [i]);
-		}
-		highlits = [];
-	    }            
-	    var sphere = meshPerYear [currentYear] [3 * intersects[0].object.idObj];
-	    var box = meshPerYear [currentYear] [3 * intersects[0].object.idObj + 2];
-	    
-	    for (var i = 0; i < 3; i++) {
-		var obj = meshPerYear [currentYear] [3 * intersects[0].object.idObj + i];
-		var mat2 = new THREE.MeshBasicMaterial ({color : 0x00ff00, side : THREE.BackSide });
-		var clone = new THREE.Mesh (obj.geometry, mat2);
-		clone.position.set (obj.position.x, obj.position.y, obj.position.z);
-		if (i == 0 || i == 2)
-		    clone.scale.set (1.5, 1.5, 1.5);		
-		else
-		    clone.scale.set (1.5, 1., 1.5);
-		highlits.push (clone);
-		scene.add (clone);
+
+    var intersects = raycaster.intersectObjects (meshPerYear [currentYear]);
+    if (intersects.length > 0) {
+	
+	// On enleve les ancien elements en surbrillance.
+        if ( highlits ) {
+	    for (var i = 0; i < highlits.length; i++) {
+		scene.remove (highlits [i]);
 	    }
+	    highlits = [];
+	}            
 
-	    var text = document.createElement ('div');
-	    text.className = 'label';
-	    text.style.color = 'rgb(10,10,0)';
-	    text.style.backgroundColor = '#ffffff';
-	    text.style.border = '2px solid black';
-	    text.style.textAlign = "center";
-	    text.innerHTML = box.name.replace (/"/gi, '');
-	    
-	    var label = new THREE.CSS2DObject (text);
-	    label.position.copy (box.position);
-	    highlits.push (label);
-	    scene.add (label);
-
-	    var text2 = document.createElement ('div');
-	    text2.className = 'label';
-	    text2.style.color = 'rgb(10,10,0)';
-	    text2.style.backgroundColor = '#ffffff';
-	    text2.style.border = '2px solid black';
-	    text2.innerHTML = sphere.name;
-	    text2.style.textAlign = "center";
-	    
-	    var label2 = new THREE.CSS2DObject (text2);
-	    label2.position.copy (sphere.position);
-	    label2.position.y -= 60;
-	    highlits.push (label2);
-	    scene.add (label2);
-	    
-	    addToolTip (intersects [0].object.idObj);        
-	} 
-	else {
-	    if (highlits) {
-		for (var i = 0; i < highlits.length; i++) {
-		    scene.remove (highlits [i]);
-		}
-            }
-
-            highlits = [];
+	var sphere = meshPerYear [currentYear] [3 * intersects[0].object.idObj];
+	var box = meshPerYear [currentYear] [3 * intersects[0].object.idObj + 2];
+	
+	// Chaque puits possede 3 mesh [box, cyl, sph].
+	for (var i = 0; i < 3; i++) {
+	    var obj = meshPerYear [currentYear] [3 * intersects[0].object.idObj + i];
+	    var mat2 = new THREE.MeshBasicMaterial ({color : 0x00ff00, side : THREE.BackSide });
+	    var clone = new THREE.Mesh (obj.geometry, mat2);
+	    clone.position.set (obj.position.x, obj.position.y, obj.position.z);
+	    if (i == 0 || i == 2)
+		clone.scale.set (1.5, 1.5, 1.5);		
+	    else
+		clone.scale.set (1.5, 1., 1.5);
+	    highlits.push (clone);
+	    scene.add (clone);
 	}
+	
+	var text = document.createElement ('div');
+	text.className = 'label';
+	text.style.color = 'rgb(10,10,0)';
+	text.style.backgroundColor = '#ffffff';
+	text.style.border = '2px solid black';
+	text.style.textAlign = "center";
+	text.innerHTML = box.name.replace (/"/gi, '');
+	
+	var label = new THREE.CSS2DObject (text);
+	label.position.copy (box.position);
+	highlits.push (label);
+	scene.add (label);
+
+	var text2 = document.createElement ('div');
+	text2.className = 'label';
+	text2.style.color = 'rgb(10,10,0)';
+	text2.style.backgroundColor = '#ffffff';
+	text2.style.border = '2px solid black';
+	text2.innerHTML = sphere.name;
+	text2.style.textAlign = "center";
+	
+	var label2 = new THREE.CSS2DObject (text2);
+	label2.position.copy (sphere.position);
+	label2.position.y -= 60;
+	highlits.push (label2);
+	scene.add (label2);
+	
+	addToolTip (intersects [0].object.idObj);        
+    } 
+    else {
+	// rien de selectionne, on enleve les elements en surbrillance.
+	if (highlits) {
+	    for (var i = 0; i < highlits.length; i++) {
+		scene.remove (highlits [i]);
+	    }
+        }
+
+        highlits = [];
     }
+    
 }
 
+/**
+   On clique sur un puits, on va chercher les donnees dans le serveur php.
+*/
 function onPick (event) {
     var x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
     var y = - (event.clientY / renderer.domElement.clientHeight) * 2 + 1;
@@ -794,10 +825,10 @@ function onPick (event) {
 	var location = window.location.href;
 	location = location.substr (0, location.lastIndexOf ('/'));
 	var plist = window.parent.document.getElementById ('pestList');
-	console.log (location + "/php/puits.php?puit=" + i + "&pest=" + plist.value);
-	if (plist.value < 0) location = location + "/php/puits.php?puit=" + i + "&pest=" + plist.value
-	else location = location + "/php/puits.php?puit=" + i.substr (1, i.length - 2) + "&pest=" + plist.value
+	console.log (location + "/php/puits.php?puit=" + i + "&pest=" + plist.value.replace (/"/gi, ''));
+	location = location + "/php/puits.php?puit=" + i + "&pest=" + plist.value.replace (/"/gi, '');
 
+	// Affichage du label de chargement.
 	var info = window.parent.document.getElementById ('info_molecule');
 	info.innerHTML = 'Chargement des informations du puits ' + i;
 	var puit = window.parent.document.getElementById ('infoPuitList');
@@ -808,7 +839,7 @@ function onPick (event) {
 	    url : location + "/php/puits.php?puit=" + i + "&pest=" + plist.value 
 	}).done (function (datas) {
 	    datas = $.parseJSON (datas);
-	    generateGraphPuit (datas);
+	    generateGraphPuit (datas); // on cree le graphe.
 	});		
     }
 }
@@ -831,6 +862,9 @@ function animate() {
     renderer.render (orScene, orCamera);    
 }
 
+/**
+   generation du graphe d'informations d'un puits.
+ */
 function generateGraphPuit (datas) {
     var puit = window.parent.document.getElementById ('infoPuitList');
     while (puit.children.length > 0) puit.removeChild (puit.children [0]);	
@@ -865,8 +899,9 @@ function generateGraphPuit (datas) {
 	    data.addColumn ('number', datas['criteresLabel'].substr (1, datas['criteresLabel'].length - 2));
 	else data.addColumn ('number', datas['criteresLabel']);
 	var nots = [];
+
 	for (var i in datas['meta']) {
-	    if (datas['meta'][i]['nb'] == datas['nb_year']) {
+	    if (datas['meta'][i]['nb'] == datas['nb_year']) { // on ajoute les metabolites, qui ont ete recherche par le meme puits en colonne.
 		if (datas['meta'][i]['criteresLabel'][0] == '"')
 		    data.addColumn ('number', datas['meta'][i]['criteresLabel'].substr (1, datas['meta'][i]['criteresLabel'].length - 2));
 		else
@@ -875,7 +910,7 @@ function generateGraphPuit (datas) {
 	    else nots[i] = true;
 	}
 	
-	for (var i in datas['year']) {
+	for (var i in datas['year']) { // On ajoute les lignes des metabolites.
 	    var row = [i];
 	    row.push (parseFloat (datas['year'][i]['value']));
 	    for (var m in datas['year'][i]['meta']) {
@@ -906,6 +941,9 @@ function generateGraphPuit (datas) {
     
 }
 
+/**
+   Generation de l'encart contenant les informations d'un pesticide.
+*/
 function generatePest (datas) {
     $('#boxMol', window.parent.document).css('display', 'block');
     $('#chart_detection', window.parent.document).css('display', 'none');
@@ -992,7 +1030,9 @@ function generatePest (datas) {
    
 }
 
-
+/**
+   Generation du graphe des molecules les plus recherche.  
+ */
 function generateGraph (datas) {
     if (datas.length != 0) {
 		

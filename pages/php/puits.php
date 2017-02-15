@@ -6,10 +6,11 @@ $content = (array) json_decode (fread ($configFile, filesize('config.json')));
 
 $user = $content['user'];//"root";
 $pass = $content['pass'];//"root";
+$url = $content['url'];
 
 fclose ($configFile);
 
-$dbh = new PDO('mysql:host=localhost;dbname=vizo', $user, $pass);
+$dbh = new PDO($url, $user, $pass);
 
 $puit = $_GET['puit'];
 $pest = $_GET['pest'];
@@ -48,9 +49,12 @@ if ($pest < 0) {
 } else {
     $requete = '';
     if ($puit[0] == '"')
-	$requete = 'SELECT * FROM table_2_p INNER JOIN liste_param on table_2_p.CD_PARAMETRE=liste_param.CD_PARAMETRE where CD_STATION=\'' . $puit . "' and table_2_p.CD_PARAMETRE='\"" . $pest . "\"'";
+       $inter = 'SELECT * FROM table_2_p where CD_STATION=\'' . $puit . "' and CD_PARAMETRE='\"" . $pest . "\"'";
     else
-	$requete = 'SELECT * FROM table_2_p INNER JOIN liste_param on table_2_p.CD_PARAMETRE=liste_param.CD_PARAMETRE where CD_STATION=\'"' . $puit . "\"' and table_2_p.CD_PARAMETRE='\"" . $pest . "\"'";
+	$requete = 'SELECT * FROM table_2_p where CD_STATION=\'"' . $puit . "\"' and CD_PARAMETRE='\"" . $pest . "\"'";
+
+    $requete = 'SELECT * FROM liste_param INNER JOIN (' . $inter . ') as V on V.CD_PARAMETRE=liste_param.CD_PARAMETRE';
+
 
     $rep = $dbh->query ($requete);
     $infos = array ();
@@ -80,12 +84,8 @@ if ($pest < 0) {
             'meta' => array ());            
         }        
     }
-
-    if ($puit[0] == '"')
-	$requete = 'SELECT * FROM table_2_p INNER JOIN liste_param on table_2_p.CD_PARAMETRE=liste_param.CD_PARAMETRE where CD_STATION=\'' . $puit . "' and liste_param.PARENT='\"" . $pest . "\"'";
-    else
-	$requete = 'SELECT * FROM table_2_p INNER JOIN liste_param on table_2_p.CD_PARAMETRE=liste_param.CD_PARAMETRE where CD_STATION=\'"' . $puit . "\"' and liste_param.PARENT='\"" . $pest . "\"'";
-
+   
+    $requete = 'SELECT * FROM liste_param INNER JOIN (' . $inter . ') as V on V.CD_PARAMETRE=liste_param.PARENT';
     $infos['meta'] = array ();
     $rep = $dbh->query ($requete);   
     while ($donnee = $rep->fetch ()) {
@@ -99,7 +99,7 @@ if ($pest < 0) {
 	    $infos['year'][$donnee['ANNEE']]['meta'][$donnee['CD_PARAMETRE']] = $donnee['MA_MOY']; 
 	}	
     }
-    
+  
     
     echo json_encode ($infos);
 }

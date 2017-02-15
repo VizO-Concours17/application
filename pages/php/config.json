@@ -1,4 +1,5 @@
 {
     "user" : "root",
-    "pass" : "root"
+    "pass" : "root",
+    "url" : "mysql:host=localhost;dbname=vizo"
 }

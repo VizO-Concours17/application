@@ -6,28 +6,28 @@ $content = (array) json_decode (fread ($configFile, filesize('config.json')));
 
 $user = $content['user'];//"root";
 $pass = $content['pass'];//"root";
+$url = $content['url'];//"root";
 
 fclose ($configFile);
 
-$dbh = new PDO('mysql:host=localhost;dbname=vizo', $user, $pass);
+$dbh = new PDO($url, $user, $pass);
 
 $x1 = $_GET["x1"];
 $y1 = $_GET["y1"];
 $x2 = $_GET["x2"];
 $y2 = $_GET["y2"];
 
-$requete = "SELECT CdMasseDEa from table_1_pt where X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2;
+$requete = "SELECT DISTINCT CdMasseDEa from table_1_pt where X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2;
+
 
 $rep = $dbh->query ($requete);
 
-$infos = array ('masse' => [], 'pest' => []);
-
+$infos = array ('masse' => array(), 'pest' => array ());
 
 while ($donnee = $rep->fetch ()) {
-    if (!in_array ($donnee['CdMasseDEa'], $infos['masse'])) {
-	array_push ($infos['masse'], $donnee['CdMasseDEa']);
-    }    
+      array_push ($infos['masse'], $donnee['CdMasseDEa']);       
 }
+
 
 $inter = "SELECT DISTINCT CD_PARAMETRE CD from table_2_p where X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2;
 
