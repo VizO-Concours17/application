@@ -1,8 +1,14 @@
 <?php
 
 
-$user =	"root";
-$pass = "root";	
+$configFile = fopen('config.json', 'r');
+
+$content = (array) json_decode (fread ($configFile, filesize('config.json')));
+
+$user = $content['user'];//"root";
+$pass = $content['pass'];//"root";
+
+fclose ($configFile);
 
 $dbh =	 new PDO('mysql:host=localhost;dbname=vizo', $user, $pass);
 

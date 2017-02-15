@@ -1,7 +1,14 @@
 <?php
 
-$user = "root";
-$pass = "root";
+$configFile = fopen('config.json', 'r');
+
+$content = (array) json_decode (fread ($configFile, filesize('config.json')));
+
+$user = $content['user'];//"root";
+$pass = $content['pass'];//"root";
+
+fclose ($configFile);
+
 $dbh = new PDO('mysql:host=localhost;dbname=vizo', $user, $pass);
 
 $x1 = $_GET["x1"];
@@ -24,7 +31,7 @@ while ($donnee = $rep->fetch ()) {
 
 $inter = "SELECT DISTINCT CD_PARAMETRE CD from table_2_p where X_FICT_W84 >= " . $x1 . " and X_FICT_W84 <= " . $x2 . " and Y_FICT_W84 >= " . $y1 . " and Y_FICT_W84 <= ". $y2;
 
-$requete = "SELECT liste_param.LB_PARAMETRE, CD from liste_param INNER JOIN (" . $inter . ") as V ON CD=liste_param.CD_PARAMETRE";
+$requete = "SELECT liste_param.LB_PARAMETRE, CD from liste_param INNER JOIN (" . $inter . ") as V ON CD=liste_param.CD_PARAMETRE ORDER BY liste_param.LB_PARAMETRE";
 
 
 $rep = $dbh->query ($requete);

@@ -95,15 +95,13 @@ function init() {
 	    range.setAttribute ('type', 'text');
 	    range.setAttribute ('data-slider-selection', 'none');
 	    range.setAttribute ('id', 'range');
-	    range.setAttribute ('data-value', '');
+	    range.setAttribute ('data-slider-value', years.length - 1);
 	    var label = window.parent.document.createElement ('label');
 	    label.id = 'rangeText';
 	    
 	    rangeDiv.appendChild (label);
 	    rangeDiv.appendChild (range);
 	    
-	    range.defaultValue = '' + years.length - 1 + '';
-	    console.log ($(range));
 	    range.onchange = rangeChanged;
 	}
 	var legende = window.parent.document.getElementById ('legende');
